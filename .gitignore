@@ -1,0 +1,12 @@
+/.pytest_cache/
+/.tox/
+/bin/
+/build/
+/dist/
+/htmlcov/
+/include/
+/lib/
+/ntelebot.egg-info/
+/share/
+/.coverage
+__pycache__/
