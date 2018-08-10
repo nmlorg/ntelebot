@@ -19,7 +19,7 @@ def test_stop():
 
 
 def test_add():
-    """Verify the basic Loop.add -> Bot.get_updates -> Loop.run -> Dispatcher.dispatch flow."""
+    """Verify the basic Loop.add -> Bot.get_updates -> Loop.run -> Dispatcher flow."""
 
     updates = [
         {'update_id': 0, 'message': {'text': 'first'}},
@@ -37,14 +37,11 @@ def test_add():
 
     received = []
 
-    class MockDispatcher(object):
-
-        @staticmethod
-        def dispatch(unused_bot, update):
-            received.append(update)
+    def dispatch(unused_bot, update):
+        received.append(update)
 
     loop = ntelebot.loop.Loop()
-    loop.add(MockBot(), MockDispatcher())
+    loop.add(MockBot(), dispatch)
     threading.Timer(.1, loop.stop).start()
     loop.run()
     assert updates == received

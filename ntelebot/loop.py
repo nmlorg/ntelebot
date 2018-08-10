@@ -43,7 +43,7 @@ class Loop(object):
                 continue
             else:
                 if dispatcher and update:
-                    dispatcher.dispatch(bot, update)
+                    dispatcher(bot, update)
                 self.queue.task_done()
 
     def stop(self):

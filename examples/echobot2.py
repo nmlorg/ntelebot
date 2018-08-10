@@ -12,20 +12,16 @@ import sys
 import ntelebot
 
 
-class Dispatcher(object):  # pylint: disable=too-few-public-methods
-    """Example update dispatcher."""
+def dispatch(bot, update):
+    """Print all updates and echo back all messages."""
 
-    @staticmethod
-    def dispatch(bot, update):
-        """Print all updates and echo back all messages."""
-
-        pprint.pprint(update)
-        if update.get('message'):
-            message = update['message']
-            bot.send_message(
-                chat_id=message['chat']['id'],
-                text='\U0001f50a ' + message['text'],
-                reply_to_message_id=message['message_id'])
+    pprint.pprint(update)
+    if update.get('message'):
+        message = update['message']
+        bot.send_message(
+            chat_id=message['chat']['id'],
+            text='\U0001f50a ' + message['text'],
+            reply_to_message_id=message['message_id'])
 
 
 def main(argv):  # pylint: disable=missing-docstring
@@ -37,12 +33,11 @@ def main(argv):  # pylint: disable=missing-docstring
         return 1
 
     loop = ntelebot.loop.Loop()
-    dispatcher = Dispatcher()
 
     for token in argv[1:]:
         bot = ntelebot.bot.Bot(token)
         pprint.pprint(bot.get_me())
-        loop.add(bot, dispatcher)
+        loop.add(bot, dispatch)
 
     loop.run()
 
