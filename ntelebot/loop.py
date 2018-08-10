@@ -2,11 +2,14 @@
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 
+import logging
 try:
     import queue
 except ImportError:
     import Queue as queue
 import threading
+
+import ntelebot
 
 
 class Loop(object):
@@ -27,7 +30,14 @@ class Loop(object):
     def _poll_bot(self, bot, dispatcher):
         offset = None
         while not self.stopped:
-            updates = bot.get_updates(offset=offset, timeout=max(0, bot.timeout - 2))
+            timeout = max(0, bot.timeout - 2)
+            try:
+                updates = bot.get_updates(offset=offset, timeout=timeout)
+            except ntelebot.errors.Timeout:
+                logging.debug(
+                    'Asked Telegram to return after %r seconds, then waited %r with no reply!',
+                    timeout, bot.timeout)
+                continue
             if not self.stopped and updates:
                 offset = updates[-1]['update_id'] + 1
                 for update in updates:
