@@ -6,3 +6,4 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 from ntelebot import bot
 from ntelebot import errors
 from ntelebot import loop
+from ntelebot import preprocess
