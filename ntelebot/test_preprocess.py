@@ -207,6 +207,46 @@ def test_message_slash_start():
     ctx = preprocessor(bot, {'message': message})
     assert ctx.text == '/command'
 
+    text = 'L2NvbW1hbmQ'  # base64.b64encode('/command')
+    message = {'message_id': 2000, 'chat': chat, 'from': user, 'text': text}
+    ctx = preprocessor(bot, {'message': message})
+    assert ctx.text == '/command'
+
+
+def test_message_command():
+    """Verify Context extracts command strings."""
+
+    bot = MockBot()
+    preprocessor = ntelebot.preprocess.Preprocessor()
+
+    user = {'id': 1000}
+    chat = {'id': 1000, 'type': 'private'}
+    text = '/COMMAND'
+    message = {'message_id': 2000, 'chat': chat, 'from': user, 'text': text}
+    ctx = preprocessor(bot, {'message': message})
+    assert ctx.text is text
+    assert ctx.command == 'command'
+
+    text = '/command arg'
+    message = {'message_id': 2000, 'chat': chat, 'from': user, 'text': text}
+    ctx = preprocessor(bot, {'message': message})
+    assert ctx.command == 'command'
+
+    text = '/command@USER"NAME'
+    message = {'message_id': 2000, 'chat': chat, 'from': user, 'text': text}
+    ctx = preprocessor(bot, {'message': message})
+    assert ctx.command == 'command'
+
+    text = '/command@otherbot'
+    message = {'message_id': 2000, 'chat': chat, 'from': user, 'text': text}
+    ctx = preprocessor(bot, {'message': message})
+    assert ctx.command is None
+
+    text = 'test message'
+    message = {'message_id': 2000, 'chat': chat, 'from': user, 'text': text}
+    ctx = preprocessor(bot, {'message': message})
+    assert ctx.command is None
+
 
 def test_message_conversations():
     """Verify Preprocessor and Context handle manually configured conversations correctly."""

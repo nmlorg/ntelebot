@@ -26,6 +26,7 @@ class Preprocessor(object):  # pylint: disable=too-few-public-methods
 
         if update.get('message'):
             payload = update['message']
+            ctx.type = 'message'
             ctx.user = payload['from']
             ctx.chat = payload['chat']
             ctx.reply_id = payload['message_id']
@@ -45,19 +46,23 @@ class Preprocessor(object):  # pylint: disable=too-few-public-methods
             if text != payload['text']:
                 payload['entities'] = []
             ctx.text = text
+            ctx.command = get_command(ctx.text, bot_info['username'])
 
             return ctx
 
         if update.get('callback_query'):
             payload = update['callback_query']
+            ctx.type = 'callback_query'
             ctx.user = payload['from']
             ctx.chat = payload['message']['chat']
             ctx.edit_id = payload['message']['message_id']
             ctx.text = payload['data']
+            ctx.command = get_command(ctx.text, bot_info['username'])
             return ctx
 
         if update.get('inline_query'):
             payload = update['inline_query']
+            ctx.type = 'inline_query'
             ctx.user = payload['from']
             ctx.answer_id = payload['id']
             ctx.text = payload['query']
@@ -75,7 +80,7 @@ class Context(object):
 
     # pylint: disable=too-many-instance-attributes
     private = False
-    user = chat = text = None
+    type = user = chat = text = command = None
     reply_id = edit_id = answer_id = None
 
     def __init__(self, conversations, bot, bot_info):
@@ -170,3 +175,15 @@ def decode(text):
         return text.decode('utf-8')
     except UnicodeDecodeError:
         return ''
+
+
+def get_command(text, username):
+    """The normalized command name if this is a command addressed to this bot."""
+
+    if text.startswith('/'):
+        command = text[1:].split(None, 1)[0].lower()
+        if '@' in command:
+            command, target_username = command.split('@', 1)
+            if target_username != username.lower():
+                return
+        return command
