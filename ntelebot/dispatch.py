@@ -22,17 +22,18 @@ class Dispatcher(object):
     def dispatch(self, ctx):
         """Dispatch a context to a registered handler."""
 
-        for callback, filters in self.callbacks:
-            if not filters or filters(ctx):
-                return callback(ctx)
+        for callback in self.callbacks:
+            ret = callback(ctx)
+            if ret is not False:
+                return ret
 
-    def add(self, callback, filters=None):
-        """Add the given callback and set of filters to the dispatch list."""
+    def add(self, callback):
+        """Add the given callback to the dispatch list."""
 
-        self.callbacks.append((callback, filters))
+        self.callbacks.append(callback)
 
     def add_command(self, name, callback):
         """Catch messages that start with /name."""
 
-        self.add(callback,
-                 lambda ctx: ctx.type in ('message', 'callback_query') and ctx.command == name)
+        self.add(lambda ctx: ctx.type in ('message', 'callback_query') and ctx.command == name and
+                             callback(ctx))  # yapf: disable
