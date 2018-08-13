@@ -19,7 +19,7 @@ def test_stop():
 
 
 def test_add():
-    """Verify the basic Loop.add -> Bot.get_updates -> Loop.run -> Dispatcher flow."""
+    """Verify the basic Loop.add -> Bot.get_updates -> Loop.run -> dispatcher flow."""
 
     updates = [
         {'update_id': 0, 'message': {'text': 'first'}},

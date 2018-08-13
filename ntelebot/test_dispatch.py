@@ -5,6 +5,16 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import ntelebot
 
 
+class MockBot(object):
+    # pylint: disable=missing-docstring,too-few-public-methods
+
+    token = 'test:test'
+
+    @staticmethod
+    def get_me():
+        return {'username': 'username'}
+
+
 class MockContext(object):  # pylint: disable=missing-docstring,too-few-public-methods
     type = command = None
 
@@ -14,7 +24,7 @@ def test_empty():
 
     dispatcher = ntelebot.dispatch.Dispatcher()
     ctx = MockContext()
-    assert dispatcher.dispatch(ctx) is None
+    assert dispatcher(ctx) is False
 
 
 def test_catchall():
@@ -23,7 +33,9 @@ def test_catchall():
     dispatcher = ntelebot.dispatch.Dispatcher()
     dispatcher.add(lambda ctx: 'DISPATCHED')
     ctx = MockContext()
-    assert dispatcher.dispatch(ctx) == 'DISPATCHED'
+    assert dispatcher(ctx) == 'DISPATCHED'
+    dispatcher.enabled = False
+    assert dispatcher(ctx) is False
 
 
 def test_command():
@@ -34,10 +46,52 @@ def test_command():
     ctx = MockContext()
     ctx.type = 'message'
     ctx.command = None
-    assert dispatcher.dispatch(ctx) is None
+    assert dispatcher(ctx) is False
     ctx.command = 'command'
-    assert dispatcher.dispatch(ctx) == 'DISPATCHED'
+    assert dispatcher(ctx) == 'DISPATCHED'
     ctx.type = 'callback_query'
-    assert dispatcher.dispatch(ctx) == 'DISPATCHED'
+    assert dispatcher(ctx) == 'DISPATCHED'
     ctx.type = 'inline_query'
-    assert dispatcher.dispatch(ctx) is None
+    assert dispatcher(ctx) is False
+
+
+def test_nested_dispatchers():
+    """Verify DispatchGroup's basic functionality."""
+
+    dispatcher = ntelebot.dispatch.Dispatcher()
+    dispatcher.add_command('command', lambda ctx: 'COMMAND')
+
+    subdispatcher = ntelebot.dispatch.Dispatcher()
+    dispatcher.add(subdispatcher)
+    subdispatcher.add_command('subcommand', lambda ctx: 'SUBCOMMAND')
+
+    subsubdispatcher = ntelebot.dispatch.Dispatcher()
+    subdispatcher.add(subsubdispatcher)
+    subsubdispatcher.add_command('subsubcommand', lambda ctx: 'SUBSUBCOMMAND')
+
+    dispatcher.add_command('last', lambda ctx: 'LAST')
+
+    ctx = MockContext()
+    ctx.type = 'message'
+    assert dispatcher(ctx) is False
+    ctx.command = 'command'
+    assert dispatcher(ctx) == 'COMMAND'
+    ctx.command = 'subcommand'
+    assert dispatcher(ctx) == 'SUBCOMMAND'
+    ctx.command = 'subsubcommand'
+    assert dispatcher(ctx) == 'SUBSUBCOMMAND'
+    ctx.command = 'last'
+    assert dispatcher(ctx) == 'LAST'
+
+
+def test_loop_dispatcher():
+    """Verify LoopDispatcher works."""
+
+    dispatcher = ntelebot.dispatch.LoopDispatcher()
+    bot = MockBot()
+    assert dispatcher(bot, {}) is False
+    user = {'id': 1000}
+    chat = {'id': 1000, 'type': 'private'}
+    text = '/command'
+    message = {'message_id': 2000, 'chat': chat, 'from': user, 'text': text}
+    assert dispatcher(bot, {'message': message}) is False

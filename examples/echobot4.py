@@ -1,4 +1,4 @@
-"""A version of echobot3.py that uses ntelebot.dispatch.Dispatcher."""
+"""A version of echobot3.py that uses ntelebot.dispatch.LoopDispatcher."""
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 
@@ -24,7 +24,7 @@ def main(argv):  # pylint: disable=missing-docstring
         return 1
 
     loop = ntelebot.loop.Loop()
-    dispatcher = ntelebot.dispatch.Dispatcher()
+    dispatcher = ntelebot.dispatch.LoopDispatcher()
 
     dispatcher.add(echo)
 
