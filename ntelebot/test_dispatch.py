@@ -2,6 +2,8 @@
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 
+import types
+
 import ntelebot
 
 
@@ -16,7 +18,7 @@ class MockBot(object):
 
 
 class MockContext(object):  # pylint: disable=missing-docstring,too-few-public-methods
-    type = command = None
+    type = prefix = command = None
 
 
 def test_empty():
@@ -51,6 +53,32 @@ def test_command():
     assert dispatcher(ctx) == 'DISPATCHED'
     ctx.type = 'inline_query'
     assert dispatcher(ctx) is False
+
+
+def test_inline():
+    """Verify the basic @-inline filter."""
+
+    dispatcher = ntelebot.dispatch.Dispatcher()
+    dispatcher.add_inline('prefix', lambda ctx: 'PREFIX')
+    dispatcher.add_inline(None, lambda ctx: 'DEFAULT')
+    ctx = MockContext()
+    assert dispatcher(ctx) is False
+    ctx.type = 'inline_query'
+    assert dispatcher(ctx) == 'DEFAULT'
+    ctx.prefix = 'prefix'
+    assert dispatcher(ctx) == 'PREFIX'
+
+
+def test_prefix():
+    """Verify the basic prefix filter."""
+
+    dispatcher = ntelebot.dispatch.Dispatcher()
+    dispatcher.add_prefix('prefix', lambda ctx: 'PREFIX')
+    ctx = MockContext()
+    ctx.type = 'message'
+    assert dispatcher(ctx) is False
+    ctx.prefix = 'prefix'
+    assert dispatcher(ctx) == 'PREFIX'
 
 
 def test_nested_dispatchers():
@@ -93,3 +121,59 @@ def test_loop_dispatcher():
     text = '/command'
     message = {'message_id': 2000, 'chat': chat, 'from': user, 'text': text}
     assert dispatcher(bot, {'message': message}) is False
+
+
+def test_dispatch_module():
+    """Verify the magic in ntelebot.dispatch.get_callback."""
+
+    class EmptyModule(object):  # pylint: disable=missing-docstring,too-few-public-methods
+        pass
+
+    assert ntelebot.dispatch.get_callback(EmptyModule) is None
+
+    class PerUpdateModule(object):  # pylint: disable=missing-docstring,too-few-public-methods
+
+        def __init__(self, ctx):
+            pass
+
+    assert ntelebot.dispatch.get_callback(PerUpdateModule) is PerUpdateModule
+
+    class PerDispatcherModule(object):
+        # pylint: disable=missing-docstring
+
+        def dispatch(self, ctx):
+            pass
+
+        def dummy(self):
+            pass
+
+    dispatch_method = PerDispatcherModule().dispatch
+    assert ntelebot.dispatch.get_callback(dispatch_method) is dispatch_method
+    assert ntelebot.dispatch.get_callback(PerDispatcherModule().dummy) is None
+
+    # In Python 2.7, the module path must be a bytes object, while on 3.6 it must be a unicode.
+    # Luckily, __future__.unicode_literals leaves __builtins__.str alone.
+    dummy_module = types.ModuleType(str('ntelebot.dummy_module'))
+    assert ntelebot.dispatch.get_callback(dummy_module) is None
+
+    dummy_module.dispatcher = ntelebot.dispatch.Dispatcher()
+    assert ntelebot.dispatch.get_callback(dummy_module) is dummy_module.dispatcher  # pylint: disable=no-member
+
+    del dummy_module.dispatcher  # pylint: disable=no-member
+    dummy_module.default = lambda blah: 'BLAH'
+    assert ntelebot.dispatch.get_callback(dummy_module) is None
+    dummy_module.default = lambda ctx: 'DEFAULT'
+    dummy_module.inline = lambda ctx: 'INLINE'
+    dummy_module.msgprefix = lambda ctx: 'MSGPREFIX'
+    dummy_module.inline_inlprefix = lambda ctx: 'INLPREFIX'
+    dispatcher = ntelebot.dispatch.get_callback(dummy_module)
+    assert dispatcher
+    ctx = MockContext()
+    ctx.type = 'message'
+    assert dispatcher(ctx) == 'DEFAULT'
+    ctx.prefix = 'msgprefix'
+    assert dispatcher(ctx) == 'MSGPREFIX'
+    ctx.type = 'inline_query'
+    assert dispatcher(ctx) == 'INLINE'
+    ctx.prefix = 'inlprefix'
+    assert dispatcher(ctx) == 'INLPREFIX'

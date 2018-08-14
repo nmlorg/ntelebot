@@ -2,6 +2,8 @@
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 
+import inspect
+
 import ntelebot
 
 
@@ -20,16 +22,42 @@ class Dispatcher(object):
                 return ret
         return False
 
+    def _add(self, callback):
+        self.callbacks.append(callback)
+
     def add(self, callback):
         """Add the given callback to the dispatch list."""
 
-        self.callbacks.append(callback)
+        callback = get_callback(callback)
+        assert callback
+        self._add(callback)
 
     def add_command(self, name, callback):
         """Catch messages that start with /name."""
 
-        self.add(lambda ctx: (ctx.type in ('message', 'callback_query') and ctx.command == name and
-                              callback(ctx)))  # yapf: disable
+        callback = get_callback(callback)
+        assert callback
+        self._add(lambda ctx: (ctx.type in ('message', 'callback_query') and ctx.command == name and
+                               callback(ctx)))  # yapf: disable
+
+    def add_inline(self, prefix, callback):
+        """Catch messages sent via inline callbacks (@username) that start with prefix."""
+
+        callback = get_callback(callback)
+        assert callback
+        if not prefix:
+            self._add(lambda ctx: ctx.type == 'inline_query' and callback(ctx))
+        else:
+            self._add(lambda ctx: (ctx.type == 'inline_query' and ctx.prefix == prefix and
+                                   callback(ctx)))  # yapf: disable
+
+    def add_prefix(self, prefix, callback):
+        """Catch messages that start with prefix."""
+
+        callback = get_callback(callback)
+        assert callback
+        self._add(lambda ctx: (ctx.type in ('message', 'callback_query') and
+                               ctx.prefix == prefix and callback(ctx)))  # yapf: disable
 
 
 class LoopDispatcher(Dispatcher):
@@ -46,3 +74,59 @@ class LoopDispatcher(Dispatcher):
         if ctx:
             return super(LoopDispatcher, self).__call__(ctx)
         return False
+
+
+def get_callback(module):  # pylint: disable=too-many-branches,too-many-return-statements
+    """Return module if it can be used as a dispatch callback, otherwise try to build one."""
+
+    if not module:
+        return
+
+    if isinstance(module, Dispatcher):
+        return module
+
+    if inspect.isfunction(module):
+        if inspect.getargspec(module) == (['ctx'], None, None, None):  # pylint: disable=deprecated-method
+            return module
+        return
+
+    if inspect.ismethod(module):
+        if inspect.getargspec(module) == (['self', 'ctx'], None, None, None):  # pylint: disable=deprecated-method
+            return module
+        return
+
+    if inspect.isclass(module):
+        # In Python 2.7, Class.__init__ is a method, while in 3.6 it is a function.
+        if ((inspect.isfunction(module.__init__) or inspect.ismethod(module.__init__)) and
+                inspect.getargspec(module.__init__) == (['self', 'ctx'], None, None, None)):  # pylint: disable=deprecated-method
+            return module
+        return
+
+    if inspect.ismodule(module):
+        dispatcher = get_callback(getattr(module, 'dispatcher', None))
+        if dispatcher:
+            return dispatcher
+
+        dispatcher = Dispatcher()
+        default = inline = None
+
+        for fname in dir(module):
+            if fname.startswith('_'):
+                continue
+            callback = get_callback(getattr(module, fname))
+            if callback:
+                if fname == 'default':
+                    default = callback
+                elif fname == 'inline':
+                    inline = callback
+                elif fname.startswith('inline_'):
+                    dispatcher.add_inline(fname[len('inline_'):], callback)
+                else:
+                    dispatcher.add_prefix(fname, callback)
+        if inline:
+            dispatcher.add_inline(None, inline)
+        if default:
+            dispatcher.add(default)
+        if dispatcher.callbacks:
+            return dispatcher
+        return

@@ -46,6 +46,7 @@ class Preprocessor(object):  # pylint: disable=too-few-public-methods
             if text != payload['text']:
                 payload['entities'] = []
             ctx.command, ctx.text = get_command(text, bot_info['username'])
+            ctx.prefix = ctx.text.partition(' ')[0]
 
             return ctx
 
@@ -56,6 +57,7 @@ class Preprocessor(object):  # pylint: disable=too-few-public-methods
             ctx.chat = payload['message']['chat']
             ctx.edit_id = payload['message']['message_id']
             ctx.command, ctx.text = get_command(payload['data'], bot_info['username'])
+            ctx.prefix = ctx.text.partition(' ')[0]
             return ctx
 
         if update.get('inline_query'):
@@ -64,6 +66,7 @@ class Preprocessor(object):  # pylint: disable=too-few-public-methods
             ctx.user = payload['from']
             ctx.answer_id = payload['id']
             ctx.text = payload['query']
+            ctx.prefix = ctx.text.partition(' ')[0]
             return ctx
 
 
@@ -78,7 +81,7 @@ class Context(object):
 
     # pylint: disable=too-many-instance-attributes
     private = False
-    type = user = chat = text = command = None
+    type = user = chat = text = prefix = command = None
     reply_id = edit_id = answer_id = None
 
     def __init__(self, conversations, bot, bot_info):
