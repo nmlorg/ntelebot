@@ -45,8 +45,7 @@ class Preprocessor(object):  # pylint: disable=too-few-public-methods
                     text = '%s %s' % (prev_text, text)
             if text != payload['text']:
                 payload['entities'] = []
-            ctx.text = text
-            ctx.command = get_command(ctx.text, bot_info['username'])
+            ctx.command, ctx.text = get_command(text, bot_info['username'])
 
             return ctx
 
@@ -56,8 +55,7 @@ class Preprocessor(object):  # pylint: disable=too-few-public-methods
             ctx.user = payload['from']
             ctx.chat = payload['message']['chat']
             ctx.edit_id = payload['message']['message_id']
-            ctx.text = payload['data']
-            ctx.command = get_command(ctx.text, bot_info['username'])
+            ctx.command, ctx.text = get_command(payload['data'], bot_info['username'])
             return ctx
 
         if update.get('inline_query'):
@@ -180,10 +178,13 @@ def decode(text):
 def get_command(text, username):
     """The normalized command name if this is a command addressed to this bot."""
 
-    if text.startswith('/'):
-        command = text[1:].split(None, 1)[0].lower()
-        if '@' in command:
-            command, target_username = command.split('@', 1)
-            if target_username != username.lower():
-                return
-        return command
+    if not text.startswith('/'):
+        return None, text
+
+    command, _, rest = text[1:].partition(' ')
+    command = command.lower()
+    if '@' in command:
+        command, target_username = command.split('@', 1)
+        if target_username != username.lower():
+            return None, text
+    return command, rest.lstrip()

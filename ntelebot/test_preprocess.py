@@ -195,22 +195,26 @@ def test_message_slash_start():
     text = '/start'
     message = {'message_id': 2000, 'chat': chat, 'from': user, 'text': text}
     ctx = preprocessor(bot, {'message': message})
-    assert ctx.text is text
+    assert ctx.command == 'start'
+    assert ctx.text == ''
 
     text = '/start /command'
     message = {'message_id': 2000, 'chat': chat, 'from': user, 'text': text}
     ctx = preprocessor(bot, {'message': message})
-    assert ctx.text == '/command'
+    assert ctx.command == 'command'
+    assert ctx.text == ''
 
     text = '/start L2NvbW1hbmQ'  # base64.b64encode('/command')
     message = {'message_id': 2000, 'chat': chat, 'from': user, 'text': text}
     ctx = preprocessor(bot, {'message': message})
-    assert ctx.text == '/command'
+    assert ctx.command == 'command'
+    assert ctx.text == ''
 
     text = 'L2NvbW1hbmQ'  # base64.b64encode('/command')
     message = {'message_id': 2000, 'chat': chat, 'from': user, 'text': text}
     ctx = preprocessor(bot, {'message': message})
-    assert ctx.text == '/command'
+    assert ctx.command == 'command'
+    assert ctx.text == ''
 
 
 def test_message_command():
@@ -224,28 +228,32 @@ def test_message_command():
     text = '/COMMAND'
     message = {'message_id': 2000, 'chat': chat, 'from': user, 'text': text}
     ctx = preprocessor(bot, {'message': message})
-    assert ctx.text is text
     assert ctx.command == 'command'
+    assert ctx.text == ''
 
-    text = '/command arg'
+    text = '/command   arg'
     message = {'message_id': 2000, 'chat': chat, 'from': user, 'text': text}
     ctx = preprocessor(bot, {'message': message})
     assert ctx.command == 'command'
+    assert ctx.text == 'arg'
 
     text = '/command@USER"NAME'
     message = {'message_id': 2000, 'chat': chat, 'from': user, 'text': text}
     ctx = preprocessor(bot, {'message': message})
     assert ctx.command == 'command'
+    assert ctx.text == ''
 
     text = '/command@otherbot'
     message = {'message_id': 2000, 'chat': chat, 'from': user, 'text': text}
     ctx = preprocessor(bot, {'message': message})
     assert ctx.command is None
+    assert ctx.text is text
 
     text = 'test message'
     message = {'message_id': 2000, 'chat': chat, 'from': user, 'text': text}
     ctx = preprocessor(bot, {'message': message})
     assert ctx.command is None
+    assert ctx.text is text
 
 
 def test_message_conversations():
@@ -266,11 +274,13 @@ def test_message_conversations():
     # actual message.
     ctx.set_conversation('/command \u2022 data')
     ctx = preprocessor(bot, {'message': message})
-    assert ctx.text == '/command \u2022 data test \u2022 message'
+    assert ctx.command == 'command'
+    assert ctx.text == '\u2022 data test \u2022 message'
 
     # If the user did something to set a conversation, then sends a non-command message, then sends
     # a second non-command message, the conversation is not prepended.
     ctx = preprocessor(bot, {'message': message})
+    assert ctx.command is None
     assert ctx.text is text
 
     # Similarly, if the user did something to set a conversation, then sends a command message, the
@@ -279,13 +289,15 @@ def test_message_conversations():
     text = '/new \u2022 command'
     message = {'message_id': 2000, 'chat': chat, 'from': user, 'text': text}
     ctx = preprocessor(bot, {'message': message})
-    assert ctx.text is text
+    assert ctx.command == 'new'
+    assert ctx.text == '\u2022 command'
 
     # ... even if the second command doesn't set a conversation and the user sends a non-command
     # message (the previous conversation is not resumed).
     text = 'test \u2022 message'
     message = {'message_id': 2000, 'chat': chat, 'from': user, 'text': text}
     ctx = preprocessor(bot, {'message': message})
+    assert ctx.command is None
     assert ctx.text is text
 
 
