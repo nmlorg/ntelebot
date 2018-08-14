@@ -34,8 +34,6 @@ def test_catchall():
     dispatcher.add(lambda ctx: 'DISPATCHED')
     ctx = MockContext()
     assert dispatcher(ctx) == 'DISPATCHED'
-    dispatcher.enabled = False
-    assert dispatcher(ctx) is False
 
 
 def test_command():

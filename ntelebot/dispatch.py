@@ -6,9 +6,7 @@ import ntelebot
 
 
 class Dispatcher(object):
-    """A collection of callbacks that can be added, enabled, and disabled together."""
-
-    enabled = True
+    """A collection of callbacks that can be added together."""
 
     def __init__(self):
         self.callbacks = []
@@ -16,8 +14,6 @@ class Dispatcher(object):
     def __call__(self, ctx):
         """Dispatch a context to a registered handler."""
 
-        if not self.enabled:
-            return False
         for callback in self.callbacks:
             ret = callback(ctx)
             if ret is not False:
