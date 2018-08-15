@@ -7,7 +7,9 @@ try:
     import queue
 except ImportError:
     import Queue as queue
+import random
 import threading
+import time
 
 import ntelebot
 
@@ -28,29 +30,32 @@ class Loop(object):
         thr.start()
 
     def _poll_bot(self, bot, dispatcher):
+        backoff = 0
         offset = None
         while not self.stopped:
+            if backoff:
+                logging.error('Backing off for %r seconds.', backoff)
+                time.sleep(backoff)
+            backoff = max(min(backoff * 2, 30), 1) * (random.random() + .5)
             timeout = max(0, bot.timeout - 2)
             try:
                 updates = bot.get_updates(offset=offset, timeout=timeout)
             except ntelebot.errors.Conflict:
                 logging.error('Another process is using this bot token.')
-                break
             except ntelebot.errors.Unauthorized:
                 logging.error('Bot token is not/no longer authorized.')
-                break
             except ntelebot.errors.Timeout:
-                logging.debug(
+                logging.error(
                     'Asked Telegram to return after %r seconds, then waited %r with no reply!',
                     timeout, bot.timeout)
-                continue
             except ntelebot.errors.Error:
                 logging.exception('Ignoring uncaught error while polling:')
-                continue
-            if not self.stopped and updates:
-                offset = updates[-1]['update_id'] + 1
-                for update in updates:
-                    self.queue.put((bot, dispatcher, update))
+            else:
+                backoff = 0
+                if not self.stopped and updates:
+                    offset = updates[-1]['update_id'] + 1
+                    for update in updates:
+                        self.queue.put((bot, dispatcher, update))
 
     def run(self):
         """Wait for updates received from Loop.add and feed them through the given dispatcher."""
