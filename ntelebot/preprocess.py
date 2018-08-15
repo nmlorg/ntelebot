@@ -143,10 +143,12 @@ class Context(object):
             return self.bot.edit_message_text(
                 chat_id=self.chat['id'], message_id=self.edit_id, text=text, **kwargs)
 
-    def set_conversation(self, text=None):
+    def set_conversation(self, text):
         """If the next message from this user does not begin with a slash, prepend text."""
 
-        self._conversations[self.user['id']] = text or self.text
+        if not text.startswith('/') and self.command:
+            text = '/%s %s' % (self.command, text)
+        self._conversations[self.user['id']] = text
 
 
 def encode(text):

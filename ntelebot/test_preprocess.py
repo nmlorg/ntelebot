@@ -277,6 +277,11 @@ def test_message_conversations():
     assert ctx.command == 'command'
     assert ctx.text == '\u2022 data test \u2022 message'
 
+    ctx.set_conversation('no \u2022 command')
+    ctx = preprocessor(bot, {'message': message})
+    assert ctx.command == 'command'
+    assert ctx.text == 'no \u2022 command test \u2022 message'
+
     # If the user did something to set a conversation, then sends a non-command message, then sends
     # a second non-command message, the conversation is not prepended.
     ctx = preprocessor(bot, {'message': message})
