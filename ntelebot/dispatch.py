@@ -6,6 +6,19 @@ import inspect
 
 import ntelebot
 
+try:  # See https://github.com/nmlorg/ntelebot/commit/5e54971be1e9a3caa1b4fe4502b3d182d46e1437.
+    inspect.getfullargspec
+except AttributeError:
+
+    def getargspec(func):  # pylint: disable=missing-docstring
+        argspec = inspect.getargspec(func)  # pylint: disable=deprecated-method
+        return argspec.args, argspec.varargs, argspec.keywords, argspec.defaults, []
+else:
+
+    def getargspec(func):  # pylint: disable=missing-docstring
+        argspec = inspect.getfullargspec(func)
+        return argspec.args, argspec.varargs, argspec.varkw, argspec.defaults, argspec.kwonlyargs
+
 
 class Dispatcher(object):
     """A collection of callbacks that can be added together."""
@@ -86,19 +99,19 @@ def get_callback(module, recurse=True):  # pylint: disable=too-many-branches,too
         return module
 
     if inspect.isfunction(module):
-        if inspect.getargspec(module) == (['ctx'], None, None, None):  # pylint: disable=deprecated-method
+        if getargspec(module) == (['ctx'], None, None, None, []):
             return module
         return
 
     if inspect.ismethod(module):
-        if inspect.getargspec(module) == (['self', 'ctx'], None, None, None):  # pylint: disable=deprecated-method
+        if getargspec(module) == (['self', 'ctx'], None, None, None, []):
             return module
         return
 
     if inspect.isclass(module):
         # In Python 2.7, Class.__init__ is a method, while in 3.6 it is a function.
         if ((inspect.isfunction(module.__init__) or inspect.ismethod(module.__init__)) and
-                inspect.getargspec(module.__init__) == (['self', 'ctx'], None, None, None)):  # pylint: disable=deprecated-method
+                getargspec(module.__init__) == (['self', 'ctx'], None, None, None, [])):
             return module
         return
 

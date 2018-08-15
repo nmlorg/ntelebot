@@ -2,6 +2,7 @@
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 
+import pprint
 import types
 
 import ntelebot
@@ -177,3 +178,6 @@ def test_dispatch_module():
     assert dispatcher(ctx) == 'INLINE'
     ctx.prefix = 'inlprefix'
     assert dispatcher(ctx) == 'INLPREFIX'
+
+    # See https://github.com/nmlorg/ntelebot/commit/5e54971be1e9a3caa1b4fe4502b3d182d46e1437.
+    assert ntelebot.dispatch.get_callback(pprint) is None
