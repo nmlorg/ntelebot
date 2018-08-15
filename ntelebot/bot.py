@@ -43,4 +43,6 @@ class _Request(object):  # pylint: disable=too-few-public-methods
             raise ntelebot.errors.Unauthorized(data)
         if data['error_code'] == 404:
             raise ntelebot.errors.NotFound(data)
+        if data['error_code'] == 409:
+            raise ntelebot.errors.Conflict(data)
         raise ntelebot.errors.Error(data)

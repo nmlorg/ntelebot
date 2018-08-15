@@ -33,10 +33,19 @@ class Loop(object):
             timeout = max(0, bot.timeout - 2)
             try:
                 updates = bot.get_updates(offset=offset, timeout=timeout)
+            except ntelebot.errors.Conflict:
+                logging.error('Another process is using this bot token.')
+                break
+            except ntelebot.errors.Unauthorized:
+                logging.error('Bot token is not/no longer authorized.')
+                break
             except ntelebot.errors.Timeout:
                 logging.debug(
                     'Asked Telegram to return after %r seconds, then waited %r with no reply!',
                     timeout, bot.timeout)
+                continue
+            except ntelebot.errors.Error:
+                logging.exception('Ignoring uncaught error while polling:')
                 continue
             if not self.stopped and updates:
                 offset = updates[-1]['update_id'] + 1

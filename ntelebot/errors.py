@@ -7,6 +7,10 @@ class Error(Exception):
     """Base ntelebot error."""
 
 
+class Conflict(Error):
+    """HTTP 409 Conflict."""
+
+
 class NotFound(Error):
     """HTTP 404 Not Found."""
 
