@@ -76,7 +76,7 @@ class LoopDispatcher(Dispatcher):
         return False
 
 
-def get_callback(module):  # pylint: disable=too-many-branches,too-many-return-statements
+def get_callback(module, recurse=True):  # pylint: disable=too-many-branches,too-many-return-statements
     """Return module if it can be used as a dispatch callback, otherwise try to build one."""
 
     if not module:
@@ -102,8 +102,8 @@ def get_callback(module):  # pylint: disable=too-many-branches,too-many-return-s
             return module
         return
 
-    if inspect.ismodule(module):
-        dispatcher = get_callback(getattr(module, 'dispatcher', None))
+    if recurse and inspect.ismodule(module):
+        dispatcher = get_callback(getattr(module, 'dispatcher', None), recurse=False)
         if dispatcher:
             return dispatcher
 
@@ -113,7 +113,7 @@ def get_callback(module):  # pylint: disable=too-many-branches,too-many-return-s
         for fname in dir(module):
             if fname.startswith('_'):
                 continue
-            callback = get_callback(getattr(module, fname))
+            callback = get_callback(getattr(module, fname), recurse=False)
             if callback:
                 if fname == 'default':
                     default = callback
