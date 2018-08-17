@@ -13,6 +13,7 @@ class Bot(object):  # pylint: disable=too-few-public-methods
     BASE_URL = 'https://api.telegram.org/bot'
 
     def __init__(self, token, timeout=12):
+        self.token = token
         self.url = '%s%s/' % (self.BASE_URL, token)
         self.timeout = timeout
 
