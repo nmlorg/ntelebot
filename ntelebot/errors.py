@@ -6,6 +6,13 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 class Error(Exception):
     """Base ntelebot error."""
 
+    description = error_code = None
+
+    def __init__(self, data=None):
+        super(Error, self).__init__()
+        if isinstance(data, dict):
+            self.__dict__.update(data)
+
 
 class Conflict(Error):
     """HTTP 409 Conflict."""
