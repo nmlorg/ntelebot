@@ -21,18 +21,26 @@ class Loop(object):
 
     def __init__(self):
         self.queue = queue.Queue()
+        self.active = set()
 
     def add(self, bot, dispatcher):
         """Begin polling bot for updates to be fed into dispatcher by Loop.run."""
 
-        thr = threading.Thread(target=self._poll_bot, args=(bot, dispatcher))
-        thr.daemon = True
-        thr.start()
+        if bot.token not in self.active:
+            self.active.add(bot.token)
+            thr = threading.Thread(target=self._poll_bot, args=(bot, dispatcher))
+            thr.daemon = True
+            thr.start()
+
+    def remove(self, token):
+        """Stop polling for updates for the given API Token."""
+
+        self.active.remove(token)
 
     def _poll_bot(self, bot, dispatcher):
         backoff = 0
         offset = None
-        while not self.stopped:
+        while not self.stopped and bot.token in self.active:
             if backoff:
                 logging.error('Backing off for %r seconds.', backoff)
                 time.sleep(backoff)
@@ -48,11 +56,11 @@ class Loop(object):
                 logging.error(
                     'Asked Telegram to return after %r seconds, then waited %r with no reply!',
                     timeout, bot.timeout)
-            except ntelebot.errors.Error:
+            except Exception:  # pylint: disable=broad-except
                 logging.exception('Ignoring uncaught error while polling:')
             else:
                 backoff = 0
-                if not self.stopped and updates:
+                if not self.stopped and updates and bot.token in self.active:
                     offset = updates[-1]['update_id'] + 1
                     for update in updates:
                         self.queue.put((bot, dispatcher, update))
@@ -67,7 +75,10 @@ class Loop(object):
                 continue
             else:
                 if dispatcher and update:
-                    dispatcher(bot, update)
+                    try:
+                        dispatcher(bot, update)
+                    except Exception:
+                        logging.exception('Ignoring uncaught error while dispatching:')
                 self.queue.task_done()
 
     def stop(self):

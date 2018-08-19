@@ -26,9 +26,11 @@ def test_add():
         {'update_id': 1, 'message': {'text': 'second'}},
     ]  # yapf: disable
 
-    # pylint: disable=missing-docstring,too-few-public-methods
     class MockBot(object):
+        # pylint: disable=missing-docstring,too-few-public-methods
+
         timeout = 3
+        token = 'mock:bot'
 
         @staticmethod
         def get_updates(offset=None, timeout=None):
@@ -37,11 +39,50 @@ def test_add():
 
     received = []
 
-    def dispatch(unused_bot, update):
+    def _dispatch(unused_bot, update):
         received.append(update)
 
     loop = ntelebot.loop.Loop()
-    loop.add(MockBot(), dispatch)
+    loop.add(MockBot(), _dispatch)
     threading.Timer(.1, loop.stop).start()
     loop.run()
-    assert updates == received
+    assert received == updates
+
+
+def test_remove():
+    """Verify a bot added to a loop stops dispatching updates once its token is removed."""
+
+    updates = [
+        {'update_id': 0, 'message': {'text': 'first'}},
+        {'update_id': 1, 'message': {'text': 'second'}},
+    ]  # yapf: disable
+
+    class MockBot(object):
+        # pylint: disable=missing-docstring,too-few-public-methods
+
+        timeout = 3
+        token = 'mock:bot'
+
+        @staticmethod
+        def get_updates(offset=None, timeout=None):
+            _ = timeout
+            time.sleep(.1)
+            return [updates[offset or 0]]
+
+    received = []
+
+    def _dispatch(unused_bot, update):
+        received.append(update)
+
+    loop = ntelebot.loop.Loop()
+    bot = MockBot()
+    loop.add(bot, _dispatch)
+
+    def _shutdown():
+        loop.remove(bot.token)
+        time.sleep(.1)
+        loop.stop()
+
+    threading.Timer(.15, _shutdown).start()
+    loop.run()
+    assert received == updates[:1]
