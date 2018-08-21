@@ -9,7 +9,7 @@ class Error(Exception):
     description = error_code = None
 
     def __init__(self, data=None):
-        super(Error, self).__init__()
+        super(Error, self).__init__(data)
         if isinstance(data, dict):
             self.__dict__.update(data)
 
