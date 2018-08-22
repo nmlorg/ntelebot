@@ -2,7 +2,6 @@
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-import pprint
 import types
 
 import ntelebot
@@ -157,27 +156,5 @@ def test_dispatch_module():
     dummy_module = types.ModuleType(str('ntelebot.dummy_module'))
     assert ntelebot.dispatch.get_callback(dummy_module) is None
 
-    dummy_module.dispatcher = ntelebot.dispatch.Dispatcher()
-    assert ntelebot.dispatch.get_callback(dummy_module) is dummy_module.dispatcher  # pylint: disable=no-member
-
-    del dummy_module.dispatcher  # pylint: disable=no-member
-    dummy_module.default = lambda blah: 'BLAH'
-    assert ntelebot.dispatch.get_callback(dummy_module) is None
-    dummy_module.default = lambda ctx: 'DEFAULT'
-    dummy_module.inline = lambda ctx: 'INLINE'
-    dummy_module.msgprefix = lambda ctx: 'MSGPREFIX'
-    dummy_module.inline_inlprefix = lambda ctx: 'INLPREFIX'
-    dispatcher = ntelebot.dispatch.get_callback(dummy_module)
-    assert dispatcher
-    ctx = MockContext()
-    ctx.type = 'message'
-    assert dispatcher(ctx) == 'DEFAULT'
-    ctx.prefix = 'msgprefix'
-    assert dispatcher(ctx) == 'MSGPREFIX'
-    ctx.type = 'inline_query'
-    assert dispatcher(ctx) == 'INLINE'
-    ctx.prefix = 'inlprefix'
-    assert dispatcher(ctx) == 'INLPREFIX'
-
-    # See https://github.com/nmlorg/ntelebot/commit/5e54971be1e9a3caa1b4fe4502b3d182d46e1437.
-    assert ntelebot.dispatch.get_callback(pprint) is None
+    dummy_module.dispatch = ntelebot.dispatch.Dispatcher()
+    assert ntelebot.dispatch.get_callback(dummy_module) is dummy_module.dispatch  # pylint: disable=no-member

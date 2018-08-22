@@ -77,7 +77,7 @@ class Loop(object):
                 if dispatcher and update:
                     try:
                         dispatcher(bot, update)
-                    except Exception:
+                    except Exception:  # pylint: disable=broad-except
                         logging.exception('Ignoring uncaught error while dispatching:')
                 self.queue.task_done()
 

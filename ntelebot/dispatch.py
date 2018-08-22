@@ -116,30 +116,7 @@ def get_callback(module, recurse=True):  # pylint: disable=too-many-branches,too
         return
 
     if recurse and inspect.ismodule(module):
-        dispatcher = get_callback(getattr(module, 'dispatcher', None), recurse=False)
+        dispatcher = get_callback(getattr(module, 'dispatch', None), recurse=False)
         if dispatcher:
-            return dispatcher
-
-        dispatcher = Dispatcher()
-        default = inline = None
-
-        for fname in dir(module):
-            if fname.startswith('_'):
-                continue
-            callback = get_callback(getattr(module, fname), recurse=False)
-            if callback:
-                if fname == 'default':
-                    default = callback
-                elif fname == 'inline':
-                    inline = callback
-                elif fname.startswith('inline_'):
-                    dispatcher.add_inline(fname[len('inline_'):], callback)
-                else:
-                    dispatcher.add_prefix(fname, callback)
-        if inline:
-            dispatcher.add_inline(None, inline)
-        if default:
-            dispatcher.add(default)
-        if dispatcher.callbacks:
             return dispatcher
         return
