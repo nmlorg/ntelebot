@@ -24,6 +24,14 @@ class Preprocessor(object):  # pylint: disable=too-few-public-methods
 
         ctx = Context(self.conversations, bot, bot_info)
 
+        if update.get('message') and update['message'].get('new_chat_members'):
+            payload = update['message']
+            ctx.type = 'join'
+            ctx.user = payload['new_chat_members'][0]
+            ctx.chat = payload['chat']
+            ctx.reply_id = payload['message_id']
+            return ctx
+
         if update.get('message'):
             payload = update['message']
             ctx.type = 'message'
@@ -31,7 +39,7 @@ class Preprocessor(object):  # pylint: disable=too-few-public-methods
             ctx.chat = payload['chat']
             ctx.reply_id = payload['message_id']
 
-            text = payload['text']
+            text = payload.get('text', '')
             if (text.startswith('/start ') or
                     text.startswith('/start@%s ' % bot_info['username'].lower())):
                 text = text.split(None, 1)[1]
@@ -43,7 +51,7 @@ class Preprocessor(object):  # pylint: disable=too-few-public-methods
                 prev_text = self.conversations.pop(ctx.user['id'], None)
                 if not text.startswith('/') and prev_text:
                     text = '%s %s' % (prev_text, text)
-            if text != payload['text']:
+            if text != payload.get('text', ''):
                 payload['entities'] = []
             ctx.command, ctx.text = get_command(text, bot_info['username'])
             ctx.prefix = ctx.text.partition(' ')[0]
