@@ -5,7 +5,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import logging
 try:
     import queue
-except ImportError:
+except ImportError:  # pragma: no cover
     import Queue as queue
 import random
 import threading

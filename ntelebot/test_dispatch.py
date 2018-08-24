@@ -126,6 +126,16 @@ def test_loop_dispatcher():
 def test_dispatch_module():
     """Verify the magic in ntelebot.dispatch.get_callback."""
 
+    def dummy_function():  # pylint: disable=missing-docstring
+        pass  # pragma: no cover
+
+    assert ntelebot.dispatch.get_callback(dummy_function) is None
+
+    def dispatch_function(ctx):  # pylint: disable=missing-docstring,unused-argument
+        pass  # pragma: no cover
+
+    assert ntelebot.dispatch.get_callback(dispatch_function) is dispatch_function
+
     class EmptyModule(object):  # pylint: disable=missing-docstring,too-few-public-methods
         pass
 
@@ -133,7 +143,7 @@ def test_dispatch_module():
 
     class PerUpdateModule(object):  # pylint: disable=missing-docstring,too-few-public-methods
 
-        def __init__(self, ctx):
+        def __init__(self, ctx):  # pragma: no cover
             pass
 
     assert ntelebot.dispatch.get_callback(PerUpdateModule) is PerUpdateModule
@@ -141,10 +151,10 @@ def test_dispatch_module():
     class PerDispatcherModule(object):
         # pylint: disable=missing-docstring
 
-        def dispatch(self, ctx):
+        def dispatch(self, ctx):  # pragma: no cover
             pass
 
-        def dummy(self):
+        def dummy(self):  # pragma: no cover
             pass
 
     dispatch_method = PerDispatcherModule().dispatch

@@ -8,7 +8,7 @@ import ntelebot
 
 try:  # See https://github.com/nmlorg/ntelebot/commit/5e54971be1e9a3caa1b4fe4502b3d182d46e1437.
     inspect.getfullargspec
-except AttributeError:
+except AttributeError:  # pragma: no cover
 
     def getargspec(func):  # pylint: disable=missing-docstring
         argspec = inspect.getargspec(func)  # pylint: disable=deprecated-method
