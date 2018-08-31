@@ -18,6 +18,10 @@ class Conflict(Error):
     """HTTP 409 Conflict."""
 
 
+class Forbidden(Error):
+    """HTTP 403 Forbidden."""
+
+
 class NotFound(Error):
     """HTTP 404 Not Found."""
 

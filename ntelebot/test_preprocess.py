@@ -30,7 +30,7 @@ class MockBot(object):
 
     def send_message(self, chat_id=None, text=None, reply_to_message_id=None, parse_mode=None):
         if chat_id in self.unauthorized:
-            raise ntelebot.errors.Unauthorized()
+            raise ntelebot.errors.Forbidden()
 
         self.messages[chat_id, None] = text
         self.parse_modes[chat_id, None] = parse_mode

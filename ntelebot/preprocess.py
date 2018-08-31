@@ -141,7 +141,7 @@ class Context(object):
                 return self.bot.send_message(chat_id=self.chat['id'], text=text, **kwargs)
             try:
                 return self.bot.send_message(chat_id=self.user['id'], text=text, **kwargs)
-            except ntelebot.errors.Unauthorized:
+            except ntelebot.errors.Forbidden:
                 return self.bot.send_message(
                     chat_id=self.chat['id'],
                     text=self.encode_link(self.text, "Let's take this to a private chat!"),
