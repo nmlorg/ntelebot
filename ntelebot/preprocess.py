@@ -165,7 +165,7 @@ def encode(text):
     if not isinstance(text, bytes):
         text = text.encode('utf-8')
 
-    return base64.urlsafe_b64encode(text).rstrip(b'=')
+    return base64.urlsafe_b64encode(text).rstrip(b'=').decode('ascii')
 
 
 def decode(text):

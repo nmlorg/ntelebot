@@ -154,8 +154,8 @@ def test_message_group():
     bot.unauthorized.add(user['id'])
     assert ctx.reply_text(response_text) == 'REPLY'
     assert bot.messages[chat['id'], None] == (
-        '<a href="https://t.me/user&quot;name?start=%s">Let\'s take this to a private chat!</a>' %
-        ntelebot.preprocess.encode(text))
+        '<a href="https://t.me/user&quot;name?start=dGVzdCDigKIgbWVzc2FnZQ">Let\'s take this to a '
+        'private chat!</a>')
     assert bot.parse_modes[chat['id'], None] == 'HTML'
 
 
@@ -309,11 +309,11 @@ def test_message_conversations():
 def test_encode():
     """Verify the deeplink encoder handles different types of strings reaonably."""
 
-    assert ntelebot.preprocess.encode(b'') == b''
-    assert ntelebot.preprocess.encode(u'') == b''
-    assert ntelebot.preprocess.encode(b'test') == b'dGVzdA'
-    assert ntelebot.preprocess.encode(u'test') == b'dGVzdA'
-    assert ntelebot.preprocess.encode(u'\u2022') == b'4oCi'
+    assert ntelebot.preprocess.encode(b'') == u''
+    assert ntelebot.preprocess.encode(u'') == u''
+    assert ntelebot.preprocess.encode(b'test') == u'dGVzdA'
+    assert ntelebot.preprocess.encode(u'test') == u'dGVzdA'
+    assert ntelebot.preprocess.encode(u'\u2022') == u'4oCi'
 
 
 def test_decode():
