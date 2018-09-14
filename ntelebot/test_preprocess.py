@@ -231,11 +231,14 @@ def test_message_command():
     assert ctx.command == 'command'
     assert ctx.text == ''
 
-    text = '/command   arg'
+    text = '/command   arg1   arg2   arg3'
     message = {'message_id': 2000, 'chat': chat, 'from': user, 'text': text}
     ctx = preprocessor(bot, {'message': message})
     assert ctx.command == 'command'
-    assert ctx.text == 'arg'
+    assert ctx.text == 'arg1   arg2   arg3'
+    assert ctx.split(2) == ['arg1', 'arg2   arg3']
+    assert ctx.split(3) == ['arg1', 'arg2', 'arg3']
+    assert ctx.split(4) == ['arg1', 'arg2', 'arg3', '']
 
     text = '/command@USER"NAME'
     message = {'message_id': 2000, 'chat': chat, 'from': user, 'text': text}

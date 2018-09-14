@@ -158,6 +158,25 @@ class Context(object):
             text = '/%s %s' % (self.command, text)
         self._conversations[self.user['id']] = text
 
+    def split(self, num):
+        """Split self.text into exactly num pieces, substituting blank strings for empty slots.
+
+        This is intended for something like:
+
+            def handler(ctx):
+                target, action, text = ctx.split(3)
+
+        where a message containing '/command' would result in target = action = text = '',
+        '/command mytarget' would have target = 'mytarget' and action = text = '',
+        '/command mytarget add some more data' would have target = 'mytarget', action = 'add', and
+        text = 'some more data'.
+        """
+
+        ret = self.text.split(None, num - 1)
+        while len(ret) < num:
+            ret.append('')
+        return ret
+
 
 def encode(text):
     """Prepare text for use as a Telegram bot deeplink's start= value."""
