@@ -33,6 +33,15 @@ class Preprocessor(object):  # pylint: disable=too-few-public-methods
             ctx.data = payload['new_chat_members']
             return ctx
 
+        if update.get('message') and update['message'].get('pinned_message'):
+            payload = update['message']
+            ctx.type = 'pin'
+            ctx.user = payload['from']
+            ctx.chat = payload['chat']
+            ctx.reply_id = payload['message_id']
+            ctx.data = payload['pinned_message']
+            return ctx
+
         if update.get('message'):
             payload = update['message']
             ctx.type = 'message'

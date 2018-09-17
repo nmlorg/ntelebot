@@ -356,6 +356,32 @@ def test_new_chat_members():
     assert ctx.data == [other]
 
 
+def test_pinned_message():
+    """Verify Preprocessor handles pinned_message messages correctly."""
+
+    bot = MockBot()
+    preprocessor = ntelebot.preprocess.Preprocessor()
+
+    chat = {'id': 1000, 'type': 'private'}
+    pinned_user = {'id': 5000}
+    pinned_text = 'pinned text'
+    pinned_message = {'message_id': 6000, 'chat': chat, 'from': pinned_user, 'text': pinned_text}
+    user = {'id': 1000}
+    text = '/ignored'
+    message = {
+        'message_id': 2000,
+        'chat': chat,
+        'from': user,
+        'text': text,
+        'pinned_message': pinned_message,
+    }
+    ctx = preprocessor(bot, {'message': message})
+    assert ctx.type == 'pin'
+    assert ctx.command is None
+    assert ctx.text is None
+    assert ctx.data == pinned_message
+
+
 def test_encode():
     """Verify the deeplink encoder handles different types of strings reaonably."""
 
