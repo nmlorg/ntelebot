@@ -15,7 +15,7 @@ class Preprocessor(object):  # pylint: disable=too-few-public-methods
         self.conversations = {}
         self.bots = {}
 
-    def __call__(self, bot, update):
+    def __call__(self, bot, update):  # pylint: disable=too-many-branches,too-many-statements
         """Convert a Telegram Update instance into a normalized Context."""
 
         bot_info = self.bots.get(bot.token)
@@ -27,9 +27,10 @@ class Preprocessor(object):  # pylint: disable=too-few-public-methods
         if update.get('message') and update['message'].get('new_chat_members'):
             payload = update['message']
             ctx.type = 'join'
-            ctx.user = payload['new_chat_members'][0]
+            ctx.user = payload['from']
             ctx.chat = payload['chat']
             ctx.reply_id = payload['message_id']
+            ctx.data = payload['new_chat_members']
             return ctx
 
         if update.get('message'):
@@ -39,7 +40,11 @@ class Preprocessor(object):  # pylint: disable=too-few-public-methods
             ctx.chat = payload['chat']
             ctx.reply_id = payload['message_id']
 
-            text = payload.get('text', '')
+            if payload.get('forward_from'):
+                text = '%s' % payload['forward_from']['id']
+            else:
+                text = payload.get('text', '')
+
             if (text.startswith('/start ') or
                     text.startswith('/start@%s ' % bot_info['username'].lower())):
                 text = text.split(None, 1)[1]
@@ -89,7 +94,7 @@ class Context(object):
 
     # pylint: disable=too-many-instance-attributes
     private = False
-    type = user = chat = text = prefix = command = None
+    type = user = chat = text = prefix = command = data = None
     reply_id = edit_id = answer_id = None
 
     def __init__(self, conversations, bot, bot_info):

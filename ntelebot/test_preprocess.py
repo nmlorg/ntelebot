@@ -309,6 +309,53 @@ def test_message_conversations():
     assert ctx.text is text
 
 
+def test_forward_from():
+    """Verify Preprocessor handles forwarded messages correctly."""
+
+    bot = MockBot()
+    preprocessor = ntelebot.preprocess.Preprocessor()
+
+    user = {'id': 1000}
+    chat = {'id': 1000, 'type': 'private'}
+    text = '/acommand arg'
+    message = {'message_id': 2000, 'chat': chat, 'from': user, 'text': text}
+    ctx = preprocessor(bot, {'message': message})
+    assert ctx.command == 'acommand'
+    assert ctx.text == 'arg'
+    ctx.set_conversation('arg')
+
+    text = '/ignored'
+    other = {'id': 5000}
+    message = {'message_id': 2000, 'chat': chat, 'from': user, 'text': text, 'forward_from': other}
+    ctx = preprocessor(bot, {'message': message})
+    assert ctx.command == 'acommand'
+    assert ctx.text == 'arg 5000'
+
+
+def test_new_chat_members():
+    """Verify Preprocessor handles new_chat_members messages correctly."""
+
+    bot = MockBot()
+    preprocessor = ntelebot.preprocess.Preprocessor()
+
+    user = {'id': 1000}
+    chat = {'id': 1000, 'type': 'private'}
+    other = {'id': 5000}
+    text = '/ignored'
+    message = {
+        'message_id': 2000,
+        'chat': chat,
+        'from': user,
+        'text': text,
+        'new_chat_members': [other],
+    }
+    ctx = preprocessor(bot, {'message': message})
+    assert ctx.type == 'join'
+    assert ctx.command is None
+    assert ctx.text is None
+    assert ctx.data == [other]
+
+
 def test_encode():
     """Verify the deeplink encoder handles different types of strings reaonably."""
 
