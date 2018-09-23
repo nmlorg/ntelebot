@@ -2,11 +2,8 @@
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 
+import functools
 import logging
-try:
-    import queue
-except ImportError:  # pragma: no cover
-    import Queue as queue
 import random
 import threading
 import time
@@ -20,7 +17,7 @@ class Loop(object):
     stopped = False
 
     def __init__(self):
-        self.queue = queue.Queue()
+        self.queue = ntelebot.delayqueue.DelayQueue()
         self.active = set()
 
     def add(self, bot, dispatcher):
@@ -63,23 +60,19 @@ class Loop(object):
                 if not self.stopped and updates and bot.token in self.active:
                     offset = updates[-1]['update_id'] + 1
                     for update in updates:
-                        self.queue.put((bot, dispatcher, update))
+                        self.queue.put(functools.partial(dispatcher, bot, update))
 
     def run(self):
         """Wait for updates received from Loop.add and feed them through the given dispatcher."""
 
         while not self.stopped:
-            try:
-                bot, dispatcher, update = self.queue.get(True, 10000)
-            except queue.Empty:
-                continue
-            else:
-                if dispatcher and update:
-                    try:
-                        dispatcher(bot, update)
-                    except Exception:  # pylint: disable=broad-except
-                        logging.exception('Ignoring uncaught error while dispatching:')
-                self.queue.task_done()
+            callback = self.queue.get()
+            if callback:
+                try:
+                    callback()
+                except Exception:  # pylint: disable=broad-except
+                    logging.exception('Ignoring uncaught error while dispatching:')
+            self.queue.task_done()
 
     def stop(self):
         """Stop polling for updates and return as soon as all acked updates have been dispatched.
@@ -92,4 +85,4 @@ class Loop(object):
 
         if not self.stopped:
             self.stopped = True
-            self.queue.put((None, None, None))
+            self.queue.put(None)
