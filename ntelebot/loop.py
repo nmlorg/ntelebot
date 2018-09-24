@@ -39,7 +39,7 @@ class Loop(object):
         offset = None
         while not self.stopped and bot.token in self.active:
             if backoff:
-                logging.error('Backing off for %r seconds.', backoff)
+                logging.debug('Backing off for %r seconds.', backoff)
                 time.sleep(backoff)
             backoff = max(min(backoff * 2, 30), 1) * (random.random() + .5)
             timeout = max(0, bot.timeout - 2)
@@ -50,7 +50,7 @@ class Loop(object):
             except ntelebot.errors.Unauthorized:
                 logging.error('Bot token is not/no longer authorized.')
             except ntelebot.errors.Timeout:
-                logging.error(
+                logging.debug(
                     'Asked Telegram to return after %r seconds, then waited %r with no reply!',
                     timeout, bot.timeout)
             except Exception:  # pylint: disable=broad-except
