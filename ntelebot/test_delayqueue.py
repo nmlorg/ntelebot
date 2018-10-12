@@ -36,6 +36,16 @@ def test_puthourly(monkeypatch):
     assert queue.queue == [(100, 0, 2)]
 
     queue = ntelebot.delayqueue.DelayQueue()
+    monkeypatch.setattr('time.time', lambda: 0)
+    queue.puthourly(100, 2, jitter=300)
+    assert queue.queue == [(100 + 300, 0, 2)]
+
+    queue = ntelebot.delayqueue.DelayQueue()
     monkeypatch.setattr('time.time', lambda: 200)
     queue.puthourly(100, 2)
-    assert queue.queue == [(3700, 200, 2)]
+    assert queue.queue == [(3600 + 100, 200, 2)]
+
+    queue = ntelebot.delayqueue.DelayQueue()
+    monkeypatch.setattr('time.time', lambda: 200)
+    queue.puthourly(100, 2, jitter=300)
+    assert queue.queue == [(3600 + 100 + 300, 200, 2)]

@@ -17,14 +17,22 @@ class DelayQueue(queue.PriorityQueue, object):
         super(DelayQueue, self)._init(maxsize)
         self.__subqueue = []
 
-    def puthourly(self, offset, item):
-        """Schedule item to be returned at the next offset past the hour."""
+    def puthourly(self, offset, item, jitter=0):
+        """Schedule item to be returned at the next offset past the hour.
+
+        jitter is intended to allow randomness without affecting scheduling, while offset sets a
+        fixed pivot point for determining whether to use the current or the next hour. If it is
+        currently 1:00:05, item will be returned at:
+                     offset=0  offset=10
+          jitter=0   2:00:00   1:00:10
+          jitter=10  2:00:10   1:00:20
+        """
 
         now = time.time()
         when = now // 3600 * 3600 + offset
         if when <= now:
             when += 3600
-        return self.putwhen(when, item)
+        return self.putwhen(when + jitter, item)
 
     def putwhen(self, when, item):
         """Schedule item to be returned when time.time() >= when."""
