@@ -124,13 +124,14 @@ def test_message_group():
 
     user = {'id': 1000}
     chat = {'id': 2000, 'type': 'supergroup'}
-    text = 'test \u2022 message'
+    text = '/test@user"name \u2022 message'
     message = {'message_id': 3000, 'chat': chat, 'from': user, 'text': text}
     ctx = preprocessor(bot, {'message': message})
     assert ctx
     assert ctx.user is user
     assert ctx.chat is chat
-    assert ctx.text is text
+    assert ctx.command == 'test'
+    assert ctx.text == '\u2022 message'
 
     response_text = 'response \u2022 message'
 
@@ -138,25 +139,26 @@ def test_message_group():
     # the group chat as a reply.
     assert ctx.reply_text(response_text) == 'REPLY'
     assert bot.messages[chat['id'], None] is response_text
+    bot.messages.clear()
 
     # However, messages sent to group chats whose responses are marked as private are sent back to
     # the user.
-    bot.messages.clear()
     ctx.private = True
     assert ctx.reply_text(response_text) == 'SEND'
     assert bot.messages[user['id'], None] is response_text
+    bot.messages.clear()
 
     # However however, if a user sends a message to a group chat, and that user does not have a
     # private chat open with the bot, but the response is marked as private, the bot will try to
     # send the response in private but will fail, and end up sending a generic reply back to the
     # group chat.
-    bot.messages.clear()
     bot.unauthorized.add(user['id'])
     assert ctx.reply_text(response_text) == 'REPLY'
     assert bot.messages[chat['id'], None] == (
-        '<a href="https://t.me/user&quot;name?start=dGVzdCDigKIgbWVzc2FnZQ">Let\'s take this to a '
+        '<a href="https://t.me/user&quot;name?start=L3Rlc3Qg4oCiIG1lc3NhZ2U">Let\'s take this to a '
         'private chat!</a>')
     assert bot.parse_modes[chat['id'], None] == 'HTML'
+    bot.messages.clear()
 
 
 def test_message_reply_variations():

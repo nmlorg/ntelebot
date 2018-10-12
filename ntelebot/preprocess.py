@@ -156,9 +156,12 @@ class Context(object):
             try:
                 return self.bot.send_message(chat_id=self.user['id'], text=text, **kwargs)
             except ntelebot.errors.Forbidden:
+                orig_text = self.text
+                if self.command:
+                    orig_text = '/%s %s' % (self.command, orig_text)
                 return self.bot.send_message(
                     chat_id=self.chat['id'],
-                    text=self.encode_link(self.text, "Let's take this to a private chat!"),
+                    text=self.encode_link(orig_text, "Let's take this to a private chat!"),
                     reply_to_message_id=self.reply_id,
                     parse_mode='HTML')
         if self.edit_id:
