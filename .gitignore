@@ -1,3 +1,4 @@
+/*.egg-info/
 /.pytest_cache/
 /.tox/
 /bin/
@@ -6,7 +7,7 @@
 /htmlcov/
 /include/
 /lib/
-/ntelebot.egg-info/
 /share/
 /.coverage
+*.pyc
 __pycache__/

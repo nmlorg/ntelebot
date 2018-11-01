@@ -7,6 +7,11 @@ test_task:
       image: python:3.7
   pip_cache:
     folder: ~/.cache/pip
-    fingerprint_script: echo $PYTHON_VERSION && cat requirements-dev.txt
-    populate_script: pip install -r requirements-dev.txt
-  test_script: pytest && pylint examples ntelebot
+    fingerprint_script:
+      - echo $PYTHON_VERSION
+      - cat requirements-dev.txt
+    populate_script: pip install -r requirements-dev.txt -e .
+  test_script:
+    - pip install -r requirements-dev.txt -e .
+    - pytest
+    - pylint examples ntelebot
