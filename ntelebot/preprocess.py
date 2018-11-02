@@ -78,7 +78,8 @@ class Preprocessor(object):  # pylint: disable=too-few-public-methods
             ctx.user = payload['from']
             ctx.chat = payload['message']['chat']
             ctx.edit_id = payload['message']['message_id']
-            ctx.command, ctx.text = get_command(payload['data'], bot_info['username'])
+            text = ntelebot.keyboardutil.decode(payload['message'], payload['data'])
+            ctx.command, ctx.text = get_command(text, bot_info['username'])
             ctx.prefix = ctx.text.partition(' ')[0]
             return ctx
 
@@ -146,6 +147,12 @@ class Context(object):
 
         if args:
             text %= args
+
+        if (kwargs.get('parse_mode') == 'HTML' and kwargs.get('reply_markup') and
+                kwargs['reply_markup'].get('inline_keyboard')):
+            text_prefix = ntelebot.keyboardutil.fix(kwargs['reply_markup']['inline_keyboard'])
+            if text_prefix:
+                text = text_prefix + text
 
         if self.reply_id:
             if self.chat['type'] == 'private':
