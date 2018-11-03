@@ -324,6 +324,7 @@ def test_forward_from():
     ctx = preprocessor(bot, {'message': message})
     assert ctx.command == 'acommand'
     assert ctx.text == 'arg'
+    assert ctx.forward_from is None
     ctx.set_conversation('arg')
 
     text = '/ignored'
@@ -331,7 +332,94 @@ def test_forward_from():
     message = {'message_id': 2000, 'chat': chat, 'from': user, 'text': text, 'forward_from': other}
     ctx = preprocessor(bot, {'message': message})
     assert ctx.command == 'acommand'
-    assert ctx.text == 'arg 5000'
+    assert ctx.text == 'arg'
+    assert ctx.forward_from == 5000
+
+
+def test_reply_to_message():
+    """Verify Preprocessor handles replies correctly."""
+
+    bot = MockBot()
+    preprocessor = ntelebot.preprocess.Preprocessor()
+
+    user = {'id': 1000}
+    chat = {'id': 1000, 'type': 'private'}
+    text = '/acommand arg'
+    message = {'message_id': 2000, 'chat': chat, 'from': user, 'text': text}
+    ctx = preprocessor(bot, {'message': message})
+    assert ctx.command == 'acommand'
+    assert ctx.text == 'arg'
+    assert ctx.reply_from is None
+    ctx.set_conversation('arg')
+
+    text = '/reply command'
+    otheruser = {'id': 5000}
+    othertext = '/ignored'
+    othermessage = {'message_id': 3000, 'chat': chat, 'from': otheruser, 'text': othertext}
+    message = {
+        'message_id': 2000,
+        'chat': chat,
+        'from': user,
+        'text': text,
+        'reply_to_message': othermessage,
+    }
+    ctx = preprocessor(bot, {'message': message})
+    assert ctx.command == 'reply'
+    assert ctx.text == 'command'
+    assert ctx.reply_from == 5000
+
+
+def test_media():
+    """Verify Preprocessor handles media attachments correctly."""
+
+    bot = MockBot()
+    preprocessor = ntelebot.preprocess.Preprocessor()
+
+    user = {'id': 1000}
+    chat = {'id': 1000, 'type': 'private'}
+    sticker = {
+        'emoji': ' ',
+        'file_id': 'AAA1234',
+        'file_size': 10000,
+        'height': 512,
+        'set_name': 'ShibaInuPuppy',
+        'thumb': {
+            'file_id': 'BBB1234',
+            'file_size': 5000,
+            'height': 128,
+            'width': 128,
+        },
+        'width': 512,
+    }
+    message = {'message_id': 2000, 'chat': chat, 'from': user, 'sticker': sticker}
+    ctx = preprocessor(bot, {'message': message})
+    assert ctx.sticker == 'AAA1234'
+    assert ctx.photo is None
+
+    photos = [
+        {
+            'file_id': '76543',
+            'file_size': 1000,
+            'height': 67,
+            'width': 90,
+        },
+        {
+            'file_id': '98765',
+            'file_size': 30000,
+            'height': 480,
+            'width': 640,
+        },
+        {
+            'file_id': '87654',
+            'file_size': 15000,
+            'height': 240,
+            'width': 320,
+        },
+    ]
+    message = {'message_id': 2000, 'chat': chat, 'from': user, 'photo': photos}
+    ctx = preprocessor(bot, {'message': message})
+    assert ctx.sticker is None
+    assert ctx.photo == '98765'
 
 
 def test_new_chat_members():

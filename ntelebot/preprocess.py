@@ -49,10 +49,12 @@ class Preprocessor(object):  # pylint: disable=too-few-public-methods
             ctx.chat = payload['chat']
             ctx.reply_id = payload['message_id']
 
+            text = payload.get('text', '')
             if payload.get('forward_from'):
-                text = '%s' % payload['forward_from']['id']
-            else:
-                text = payload.get('text', '')
+                text = ''
+                ctx.forward_from = payload['forward_from']['id']
+            elif payload.get('reply_to_message'):
+                ctx.reply_from = payload['reply_to_message']['from']['id']
 
             if (text.startswith('/start ') or
                     text.startswith('/start@%s ' % bot_info['username'].lower())):
@@ -64,11 +66,21 @@ class Preprocessor(object):  # pylint: disable=too-few-public-methods
             if ctx.chat['type'] == 'private':
                 prev_text = self.conversations.pop(ctx.user['id'], None)
                 if not text.startswith('/') and prev_text:
-                    text = '%s %s' % (prev_text, text)
+                    text = text and '%s %s' % (prev_text, text) or prev_text
             if text != payload.get('text', ''):
                 payload['entities'] = []
             ctx.command, ctx.text = get_command(text, bot_info['username'])
             ctx.prefix = ctx.text.partition(' ')[0]
+
+            if payload.get('sticker'):
+                ctx.sticker = payload['sticker']['file_id']
+
+            if payload.get('photo'):
+                size = 0
+                for photo in payload['photo']:
+                    if size < photo['height'] * photo['width']:
+                        size = photo['height'] * photo['width']
+                        ctx.photo = photo['file_id']
 
             return ctx
 
@@ -105,6 +117,8 @@ class Context(object):
     # pylint: disable=too-many-instance-attributes
     private = False
     type = user = chat = text = prefix = command = data = None
+    forward_from = reply_from = None
+    sticker = photo = None
     reply_id = edit_id = answer_id = None
 
     def __init__(self, conversations, bot, bot_info):
