@@ -111,7 +111,7 @@ class Context(object):
     This primarily standardizes how the payload text is found (update.message.text,
     update.callback_query.data, update.inline_query.query, etc.) and how replies are sent
     (update.message.reply_text, update.callback_query.message.edit_message_text, bot.send_message,
-    etc.).
+    bot.answer_inline_query, etc.).
     """
 
     # pylint: disable=too-many-instance-attributes
@@ -169,13 +169,23 @@ class Context(object):
                 text = text_prefix + text
 
         if self.reply_id:
+            if text.startswith('photo:') and ' ' not in text:
+                method = self.bot.send_photo
+                kwargs['photo'] = text[len('photo:'):]
+            elif text.startswith('sticker:') and ' ' not in text:
+                method = self.bot.send_sticker
+                kwargs['sticker'] = text[len('sticker:'):]
+            else:
+                method = self.bot.send_message
+                kwargs['text'] = text
+
             if self.chat['type'] == 'private':
-                return self.bot.send_message(chat_id=self.user['id'], text=text, **kwargs)
+                return method(chat_id=self.user['id'], **kwargs)
             if not self.private:
                 kwargs.setdefault('reply_to_message_id', self.reply_id)
-                return self.bot.send_message(chat_id=self.chat['id'], text=text, **kwargs)
+                return method(chat_id=self.chat['id'], **kwargs)
             try:
-                return self.bot.send_message(chat_id=self.user['id'], text=text, **kwargs)
+                return method(chat_id=self.user['id'], **kwargs)
             except ntelebot.errors.Forbidden:
                 orig_text = self.text
                 if self.command:
@@ -185,6 +195,7 @@ class Context(object):
                     text=self.encode_link(orig_text, "Let's take this to a private chat!"),
                     reply_to_message_id=self.reply_id,
                     parse_mode='HTML')
+
         if self.edit_id:
             return self.bot.edit_message_text(
                 chat_id=self.chat['id'], message_id=self.edit_id, text=text, **kwargs)

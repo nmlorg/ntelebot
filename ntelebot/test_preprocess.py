@@ -36,6 +36,12 @@ class MockBot(object):
         self.parse_modes[chat_id, None] = parse_mode
         return reply_to_message_id and 'REPLY' or 'SEND'
 
+    def send_photo(self, chat_id=None, photo=None):
+        return 'PHOTO'
+
+    def send_sticker(self, chat_id=None, sticker=None):
+        return 'STICKER'
+
 
 def test_unknown_update():
     """Verify updates that the preprocessor doesn't understand are handled gracefully."""
@@ -420,6 +426,11 @@ def test_media():
     ctx = preprocessor(bot, {'message': message})
     assert ctx.sticker is None
     assert ctx.photo == '98765'
+
+    assert ctx.reply_text('photo:BOGUS DATA') == 'SEND'
+    assert ctx.reply_text('photo:PHOTO_ID') == 'PHOTO'
+    assert ctx.reply_text('sticker:BOGUS DATA') == 'SEND'
+    assert ctx.reply_text('sticker:STICKER_ID') == 'STICKER'
 
 
 def test_new_chat_members():
