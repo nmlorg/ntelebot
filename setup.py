@@ -3,7 +3,7 @@ import setuptools
 
 setuptools.setup(
     name='ntelebot',
-    version='0.1.1.0',
+    version='0.1.2.0',
     author='Daniel Reed',
     author_email='nmlorg@gmail.com',
     description='A simple implementation of https://core.telegram.org/bots/api.',

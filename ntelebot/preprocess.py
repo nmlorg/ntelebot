@@ -72,8 +72,8 @@ class Preprocessor(object):  # pylint: disable=too-few-public-methods
             ctx.command, ctx.text = get_command(text, bot_info['username'])
             ctx.prefix = ctx.text.partition(' ')[0]
 
-            if payload.get('sticker'):
-                ctx.sticker = payload['sticker']['file_id']
+            if payload.get('document'):
+                ctx.document = payload['document']['file_id']
 
             if payload.get('photo'):
                 size = 0
@@ -81,6 +81,9 @@ class Preprocessor(object):  # pylint: disable=too-few-public-methods
                     if size < photo['height'] * photo['width']:
                         size = photo['height'] * photo['width']
                         ctx.photo = photo['file_id']
+
+            if payload.get('sticker'):
+                ctx.sticker = payload['sticker']['file_id']
 
             return ctx
 
@@ -118,7 +121,7 @@ class Context(object):
     private = False
     type = user = chat = text = prefix = command = data = None
     forward_from = reply_from = None
-    sticker = photo = None
+    document = photo = sticker = None
     reply_id = edit_id = answer_id = None
 
     def __init__(self, conversations, bot, bot_info):
@@ -169,7 +172,10 @@ class Context(object):
                 text = text_prefix + text
 
         if self.reply_id:
-            if text.startswith('photo:') and ' ' not in text:
+            if text.startswith('document:') and ' ' not in text:
+                method = self.bot.send_document
+                kwargs['document'] = text[len('document:'):]
+            elif text.startswith('photo:') and ' ' not in text:
                 method = self.bot.send_photo
                 kwargs['photo'] = text[len('photo:'):]
             elif text.startswith('sticker:') and ' ' not in text:

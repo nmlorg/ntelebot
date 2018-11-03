@@ -36,6 +36,9 @@ class MockBot(object):
         self.parse_modes[chat_id, None] = parse_mode
         return reply_to_message_id and 'REPLY' or 'SEND'
 
+    def send_document(self, chat_id=None, document=None):
+        return 'DOCUMENT'
+
     def send_photo(self, chat_id=None, photo=None):
         return 'PHOTO'
 
@@ -383,24 +386,38 @@ def test_media():
 
     user = {'id': 1000}
     chat = {'id': 1000, 'type': 'private'}
-    sticker = {
-        'emoji': ' ',
-        'file_id': 'AAA1234',
-        'file_size': 10000,
-        'height': 512,
-        'set_name': 'ShibaInuPuppy',
+    anim = {
+        'duration': 2,
+        'file_id': 'DDD2345',
+        'file_name': 'DDD2345.mp4',
+        'file_size': 450000,
+        'height': 400,
+        'mime_type': 'video/mp4',
         'thumb': {
-            'file_id': 'BBB1234',
-            'file_size': 5000,
-            'height': 128,
-            'width': 128,
+            'file_id': 'DDD3456',
+            'file_size': 4000,
+            'height': 90,
+            'width': 90,
         },
-        'width': 512,
+        'width': 400,
     }
-    message = {'message_id': 2000, 'chat': chat, 'from': user, 'sticker': sticker}
+    doc = {
+        'file_id': 'DDD2345',
+        'file_name': 'DDD2345.mp4',
+        'file_size': 450000,
+        'mime_type': 'video/mp4',
+        'thumb': {
+            'file_id': 'DDD3456',
+            'file_size': 4000,
+            'height': 90,
+            'width': 90,
+        },
+    }
+    message = {'message_id': 2000, 'chat': chat, 'from': user, 'animation': anim, 'document': doc}
     ctx = preprocessor(bot, {'message': message})
-    assert ctx.sticker == 'AAA1234'
+    assert ctx.document == 'DDD2345'
     assert ctx.photo is None
+    assert ctx.sticker is None
 
     photos = [
         {
@@ -424,9 +441,32 @@ def test_media():
     ]
     message = {'message_id': 2000, 'chat': chat, 'from': user, 'photo': photos}
     ctx = preprocessor(bot, {'message': message})
-    assert ctx.sticker is None
+    assert ctx.document is None
     assert ctx.photo == '98765'
+    assert ctx.sticker is None
 
+    sticker = {
+        'emoji': ' ',
+        'file_id': 'AAA1234',
+        'file_size': 10000,
+        'height': 512,
+        'set_name': 'Sticker Set Name',
+        'thumb': {
+            'file_id': 'BBB1234',
+            'file_size': 5000,
+            'height': 128,
+            'width': 128,
+        },
+        'width': 512,
+    }
+    message = {'message_id': 2000, 'chat': chat, 'from': user, 'sticker': sticker}
+    ctx = preprocessor(bot, {'message': message})
+    assert ctx.document is None
+    assert ctx.photo is None
+    assert ctx.sticker == 'AAA1234'
+
+    assert ctx.reply_text('document:BOGUS DATA') == 'SEND'
+    assert ctx.reply_text('document:DOCUMENT_ID') == 'DOCUMENT'
     assert ctx.reply_text('photo:BOGUS DATA') == 'SEND'
     assert ctx.reply_text('photo:PHOTO_ID') == 'PHOTO'
     assert ctx.reply_text('sticker:BOGUS DATA') == 'SEND'
