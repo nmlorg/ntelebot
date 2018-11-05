@@ -3,7 +3,6 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import base64
-import cgi
 
 import ntelebot
 
@@ -133,7 +132,7 @@ class Context(object):
         """Generate an HTML fragment that links to a deeplink back to the bot."""
 
         # pylint: disable=deprecated-method
-        return '<a href="%s">%s</a>' % (cgi.escape(self.encode_url(command), True), text or command)
+        return '<a href="%s">%s</a>' % (cgi_escape(self.encode_url(command)), text or command)
 
     def encode_url(self, command):
         """Generate a deeplink URL."""
@@ -159,7 +158,7 @@ class Context(object):
         kwargs.setdefault('parse_mode', 'Markdown')
         return self.reply_text(text, *args, **kwargs)
 
-    def reply_text(self, text, *args, **kwargs):
+    def reply_text(self, text, *args, **kwargs):  # pylint: disable=too-many-branches
         """Reply or edit the context's message with the given text."""
 
         if args:
@@ -231,6 +230,11 @@ class Context(object):
         while len(ret) < num:
             ret.append('')
         return ret
+
+
+def cgi_escape(text):  # pylint: disable=missing-docstring
+    return text.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;').replace(
+        '"', '&quot;')
 
 
 def encode(text):

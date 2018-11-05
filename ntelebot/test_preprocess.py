@@ -36,13 +36,16 @@ class MockBot(object):
         self.parse_modes[chat_id, None] = parse_mode
         return reply_to_message_id and 'REPLY' or 'SEND'
 
-    def send_document(self, chat_id=None, document=None):
+    @staticmethod
+    def send_document(chat_id=None, document=None):  # pylint: disable=unused-argument
         return 'DOCUMENT'
 
-    def send_photo(self, chat_id=None, photo=None):
+    @staticmethod
+    def send_photo(chat_id=None, photo=None):  # pylint: disable=unused-argument
         return 'PHOTO'
 
-    def send_sticker(self, chat_id=None, sticker=None):
+    @staticmethod
+    def send_sticker(chat_id=None, sticker=None):  # pylint: disable=unused-argument
         return 'STICKER'
 
 
