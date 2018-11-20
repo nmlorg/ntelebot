@@ -27,6 +27,24 @@ class Bot(object):  # pylint: disable=too-few-public-methods
         setattr(self, k, request)
         return request
 
+    _username = None
+
+    @property
+    def username(self):  # pylint: disable=missing-docstring
+        if self._username is None:
+            self._username = self.get_me()['username']
+        return self._username
+
+    def encode_link(self, command, text=None):
+        """Generate an HTML fragment that links to a deeplink back to the bot."""
+
+        return ntelebot.deeplink.encode_link(self.username, command, text=text)
+
+    def encode_url(self, command):
+        """Generate a deeplink URL."""
+
+        return ntelebot.deeplink.encode_url(self.username, command)
+
 
 class _Request(object):  # pylint: disable=too-few-public-methods
 

@@ -5,15 +5,19 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import ntelebot
 
 
-class MockBot(object):
+class MockBot(ntelebot.bot.Bot):
     # pylint: disable=missing-docstring
-    token = 'BOT:TOKEN'
 
     def __init__(self):
+        super(MockBot, self).__init__('1234:TOKEN')
         self.messages = {}
         self.parse_modes = {}
         self.queries = {}
         self.unauthorized = set()
+
+    @staticmethod
+    def __getattr__(k):  # pragma: no cover
+        raise AttributeError(k)
 
     def answer_inline_query(self, inline_query_id=None, results=None):
         self.queries[inline_query_id] = results
@@ -524,31 +528,3 @@ def test_pinned_message():
     assert ctx.command is None
     assert ctx.text is None
     assert ctx.data == pinned_message
-
-
-def test_encode():
-    """Verify the deeplink encoder handles different types of strings reaonably."""
-
-    assert ntelebot.preprocess.encode(b'') == u''
-    assert ntelebot.preprocess.encode(u'') == u''
-    assert ntelebot.preprocess.encode(b'test') == u'dGVzdA'
-    assert ntelebot.preprocess.encode(u'test') == u'dGVzdA'
-    assert ntelebot.preprocess.encode(u'\u2022') == u'4oCi'
-
-
-def test_decode():
-    """Verify the deeplink decoder handles different types of strings reaonably."""
-
-    assert ntelebot.preprocess.decode(b'') == u''
-    assert ntelebot.preprocess.decode(u'') == u''
-    assert ntelebot.preprocess.decode(b'dGVzdA') == u'test'
-    assert ntelebot.preprocess.decode(u'dGVzdA') == u'test'
-    assert ntelebot.preprocess.decode(u'4oCi') == u'\u2022'
-    assert ntelebot.preprocess.decode(u'\u2022') == u''
-
-    # Gibberish, triggering TypeError in Python 2.7 and binascii.Error (which derives from
-    # ValueError) in Python 3.6 for incorrect padding.
-    assert ntelebot.preprocess.decode(b'a') == u''
-
-    # b'\xff', triggering UnicodeDecodeError.
-    assert ntelebot.preprocess.decode(b'/w') == u''

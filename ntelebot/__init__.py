@@ -5,6 +5,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 # pylint: disable=cyclic-import
 from ntelebot import bot
 from ntelebot import delayqueue
+from ntelebot import deeplink
 from ntelebot import dispatch
 from ntelebot import errors
 from ntelebot import keyboardutil

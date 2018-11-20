@@ -2,8 +2,6 @@
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-import base64
-
 import ntelebot
 
 
@@ -12,16 +10,11 @@ class Preprocessor(object):  # pylint: disable=too-few-public-methods
 
     def __init__(self):
         self.conversations = {}
-        self.bots = {}
 
     def __call__(self, bot, update):  # pylint: disable=too-many-branches,too-many-statements
         """Convert a Telegram Update instance into a normalized Context."""
 
-        bot_info = self.bots.get(bot.token)
-        if not bot_info:
-            self.bots[bot.token] = bot_info = bot.get_me()
-
-        ctx = Context(self.conversations, bot, bot_info)
+        ctx = Context(self.conversations, bot)
 
         if update.get('message') and update['message'].get('new_chat_members'):
             payload = update['message']
@@ -55,11 +48,10 @@ class Preprocessor(object):  # pylint: disable=too-few-public-methods
             elif payload.get('reply_to_message'):
                 ctx.reply_from = payload['reply_to_message']['from']['id']
 
-            if (text.startswith('/start ') or
-                    text.startswith('/start@%s ' % bot_info['username'].lower())):
+            if text.startswith('/start ') or text.startswith('/start@%s ' % bot.username.lower()):
                 text = text.split(None, 1)[1]
             if not text.startswith('/'):
-                tmp = decode(text)
+                tmp = ntelebot.deeplink.decode(text)
                 if tmp.startswith('/'):
                     text = tmp
             if ctx.chat['type'] == 'private':
@@ -68,7 +60,7 @@ class Preprocessor(object):  # pylint: disable=too-few-public-methods
                     text = text and '%s %s' % (prev_text, text) or prev_text
             if text != payload.get('text', ''):
                 payload['entities'] = []
-            ctx.command, ctx.text = get_command(text, bot_info['username'])
+            ctx.command, ctx.text = get_command(text, bot.username)
             ctx.prefix = ctx.text.partition(' ')[0]
 
             if payload.get('document'):
@@ -93,7 +85,7 @@ class Preprocessor(object):  # pylint: disable=too-few-public-methods
             ctx.chat = payload['message']['chat']
             ctx.edit_id = payload['message']['message_id']
             text = ntelebot.keyboardutil.decode(payload['message'], payload['data'])
-            ctx.command, ctx.text = get_command(text, bot_info['username'])
+            ctx.command, ctx.text = get_command(text, bot.username)
             ctx.prefix = ctx.text.partition(' ')[0]
             return ctx
 
@@ -123,21 +115,9 @@ class Context(object):
     document = photo = sticker = None
     reply_id = edit_id = answer_id = None
 
-    def __init__(self, conversations, bot, bot_info):
+    def __init__(self, conversations, bot):
         self._conversations = conversations
         self.bot = bot
-        self.bot_info = bot_info
-
-    def encode_link(self, command, text=None):
-        """Generate an HTML fragment that links to a deeplink back to the bot."""
-
-        # pylint: disable=deprecated-method
-        return '<a href="%s">%s</a>' % (cgi_escape(self.encode_url(command)), text or command)
-
-    def encode_url(self, command):
-        """Generate a deeplink URL."""
-
-        return 'https://t.me/%s?start=%s' % (self.bot_info['username'], encode(command))
 
     def reply_html(self, text, *args, **kwargs):
         """Reply or edit the context's message with the given HTML fragment."""
@@ -197,7 +177,7 @@ class Context(object):
                     orig_text = '/%s %s' % (self.command, orig_text)
                 return self.bot.send_message(
                     chat_id=self.chat['id'],
-                    text=self.encode_link(orig_text, "Let's take this to a private chat!"),
+                    text=self.bot.encode_link(orig_text, "Let's take this to a private chat!"),
                     reply_to_message_id=self.reply_id,
                     parse_mode='HTML')
 
@@ -230,40 +210,6 @@ class Context(object):
         while len(ret) < num:
             ret.append('')
         return ret
-
-
-def cgi_escape(text):  # pylint: disable=missing-docstring
-    return text.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;').replace(
-        '"', '&quot;')
-
-
-def encode(text):
-    """Prepare text for use as a Telegram bot deeplink's start= value."""
-
-    if not isinstance(text, bytes):
-        text = text.encode('utf-8')
-
-    return base64.urlsafe_b64encode(text).rstrip(b'=').decode('ascii')
-
-
-def decode(text):
-    """Extract the original command from a deeplink's start= value."""
-
-    if not isinstance(text, bytes):
-        try:
-            text = text.encode('ascii')
-        except UnicodeEncodeError:
-            return ''
-
-    try:
-        text = base64.urlsafe_b64decode(text + b'====')
-    except (TypeError, ValueError):
-        return ''
-
-    try:
-        return text.decode('utf-8')
-    except UnicodeDecodeError:
-        return ''
 
 
 def get_command(text, username):

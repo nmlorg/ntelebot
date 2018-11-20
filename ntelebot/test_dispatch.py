@@ -7,10 +7,15 @@ import types
 import ntelebot
 
 
-class MockBot(object):
+class MockBot(ntelebot.bot.Bot):
     # pylint: disable=missing-docstring,too-few-public-methods
 
-    token = 'test:test'
+    def __init__(self):
+        super(MockBot, self).__init__('1234:test')
+
+    @staticmethod
+    def __getattr__(k):  # pragma: no cover
+        raise AttributeError(k)
 
     @staticmethod
     def get_me():
