@@ -179,6 +179,7 @@ class Context(object):
                     chat_id=self.chat['id'],
                     text=self.bot.encode_link(orig_text, "Let's take this to a private chat!"),
                     reply_to_message_id=self.reply_id,
+                    disable_web_page_preview=True,
                     parse_mode='HTML')
 
         if self.edit_id:

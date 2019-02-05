@@ -32,7 +32,13 @@ class MockBot(ntelebot.bot.Bot):
     def get_me():
         return {'username': 'user"name'}
 
-    def send_message(self, chat_id=None, text=None, reply_to_message_id=None, parse_mode=None):
+    def send_message(  # pylint: disable=unused-argument,too-many-arguments
+            self,
+            chat_id=None,
+            text=None,
+            reply_to_message_id=None,
+            disable_web_page_preview=None,
+            parse_mode=None):
         if chat_id in self.unauthorized:
             raise ntelebot.errors.Forbidden()
 
