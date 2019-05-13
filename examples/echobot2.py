@@ -18,10 +18,9 @@ def dispatch(bot, update):
     pprint.pprint(update)
     if update.get('message'):
         message = update['message']
-        bot.send_message(
-            chat_id=message['chat']['id'],
-            text='\U0001f50a ' + message['text'],
-            reply_to_message_id=message['message_id'])
+        bot.send_message(chat_id=message['chat']['id'],
+                         text='\U0001f50a ' + message['text'],
+                         reply_to_message_id=message['message_id'])
 
 
 def main(argv):  # pylint: disable=missing-docstring

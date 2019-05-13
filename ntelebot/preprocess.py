@@ -129,8 +129,9 @@ class Context(object):
         """Reply or edit the context's message with the given result list."""
 
         if self.answer_id:
-            return self.bot.answer_inline_query(
-                inline_query_id=self.answer_id, results=results, **kwargs)
+            return self.bot.answer_inline_query(inline_query_id=self.answer_id,
+                                                results=results,
+                                                **kwargs)
 
     def reply_markdown(self, text, *args, **kwargs):
         """Reply or edit the context's message with the given Markdown fragment."""
@@ -175,16 +176,18 @@ class Context(object):
                 orig_text = self.text
                 if self.command:
                     orig_text = '/%s %s' % (self.command, orig_text)
-                return self.bot.send_message(
-                    chat_id=self.chat['id'],
-                    text=self.bot.encode_link(orig_text, "Let's take this to a private chat!"),
-                    reply_to_message_id=self.reply_id,
-                    disable_web_page_preview=True,
-                    parse_mode='HTML')
+                return self.bot.send_message(chat_id=self.chat['id'],
+                                             text=self.bot.encode_link(
+                                                 orig_text, "Let's take this to a private chat!"),
+                                             reply_to_message_id=self.reply_id,
+                                             disable_web_page_preview=True,
+                                             parse_mode='HTML')
 
         if self.edit_id:
-            return self.bot.edit_message_text(
-                chat_id=self.chat['id'], message_id=self.edit_id, text=text, **kwargs)
+            return self.bot.edit_message_text(chat_id=self.chat['id'],
+                                              message_id=self.edit_id,
+                                              text=text,
+                                              **kwargs)
 
     def set_conversation(self, text):
         """If the next message from this user does not begin with a slash, prepend text."""
