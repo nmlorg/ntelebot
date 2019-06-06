@@ -1,7 +1,5 @@
 """All exceptions used by ntelebot."""
 
-from __future__ import absolute_import, division, print_function, unicode_literals
-
 
 class Error(Exception):
     """Base ntelebot error."""

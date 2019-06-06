@@ -1,7 +1,5 @@
 """A thread-based long-poll watcher and synchronizer."""
 
-from __future__ import absolute_import, division, print_function, unicode_literals
-
 import functools
 import logging
 import random

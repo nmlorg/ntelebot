@@ -1,12 +1,7 @@
 """A queue of (when, item) that doesn't return items until their target time has passed."""
 
-from __future__ import absolute_import, division, print_function, unicode_literals
-
 import heapq
-try:
-    import queue
-except ImportError:  # pragma: no cover
-    import Queue as queue
+import queue
 import time
 
 

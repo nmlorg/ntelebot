@@ -1,7 +1,5 @@
 """Quick implementation of https://github.com/nmlorg/metabot/issues/1."""
 
-from __future__ import absolute_import, division, print_function, unicode_literals
-
 import base64
 import re
 

@@ -1,23 +1,8 @@
 """Non-universal, but fairly versatile update dispatcher."""
 
-from __future__ import absolute_import, division, print_function, unicode_literals
-
 import inspect
 
 import ntelebot
-
-try:  # See https://github.com/nmlorg/ntelebot/commit/5e54971be1e9a3caa1b4fe4502b3d182d46e1437.
-    inspect.getfullargspec
-except AttributeError:  # pragma: no cover
-
-    def getargspec(func):  # pylint: disable=missing-docstring
-        argspec = inspect.getargspec(func)  # pylint: disable=deprecated-method
-        return argspec.args, argspec.varargs, argspec.keywords, argspec.defaults, []
-else:
-
-    def getargspec(func):  # pylint: disable=missing-docstring
-        argspec = inspect.getfullargspec(func)
-        return argspec.args, argspec.varargs, argspec.varkw, argspec.defaults, argspec.kwonlyargs
 
 
 class Dispatcher(object):
@@ -87,6 +72,11 @@ class LoopDispatcher(Dispatcher):
         if ctx:
             return super(LoopDispatcher, self).__call__(ctx)
         return False
+
+
+def getargspec(func):  # pylint: disable=missing-docstring
+    argspec = inspect.getfullargspec(func)
+    return argspec.args, argspec.varargs, argspec.varkw, argspec.defaults, argspec.kwonlyargs
 
 
 def get_callback(module, recurse=True):  # pylint: disable=too-many-branches,too-many-return-statements

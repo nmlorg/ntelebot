@@ -1,7 +1,5 @@
 """Non-universal, but fairly versatile update preprocessor."""
 
-from __future__ import absolute_import, division, print_function, unicode_literals
-
 import ntelebot
 
 
