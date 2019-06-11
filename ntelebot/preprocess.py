@@ -14,28 +14,27 @@ class Preprocessor(object):  # pylint: disable=too-few-public-methods
 
         ctx = Context(self.conversations, bot)
 
-        if update.get('message') and update['message'].get('new_chat_members'):
-            payload = update['message']
+        payload = update.get('message') or update.get('channel_post')
+
+        if payload and payload.get('new_chat_members'):
             ctx.type = 'join'
-            ctx.user = payload['from']
+            ctx.user = payload.get('from')
             ctx.chat = payload['chat']
             ctx.reply_id = payload['message_id']
             ctx.data = payload['new_chat_members']
             return ctx
 
-        if update.get('message') and update['message'].get('pinned_message'):
-            payload = update['message']
+        if payload and payload.get('pinned_message'):
             ctx.type = 'pin'
-            ctx.user = payload['from']
+            ctx.user = payload.get('from')
             ctx.chat = payload['chat']
             ctx.reply_id = payload['message_id']
             ctx.data = payload['pinned_message']
             return ctx
 
-        if update.get('message'):
-            payload = update['message']
+        if payload:
             ctx.type = 'message'
-            ctx.user = payload['from']
+            ctx.user = payload.get('from')
             ctx.chat = payload['chat']
             ctx.reply_id = payload['message_id']
 
@@ -52,7 +51,7 @@ class Preprocessor(object):  # pylint: disable=too-few-public-methods
                 tmp = ntelebot.deeplink.decode(text)
                 if tmp.startswith('/'):
                     text = tmp
-            if ctx.chat['type'] == 'private':
+            if ctx.user and ctx.chat['type'] == 'private':
                 prev_text = self.conversations.pop(ctx.user['id'], None)
                 if not text.startswith('/') and prev_text:
                     text = text and '%s %s' % (prev_text, text) or prev_text
@@ -171,9 +170,9 @@ class Context(object):
                 method = self.bot.send_message
                 kwargs['text'] = text
 
-            if self.chat['type'] == 'private':
+            if self.user and self.chat['type'] == 'private':
                 return method(chat_id=self.user['id'], **kwargs)
-            if not self.private:
+            if not self.private or not self.user:
                 kwargs.setdefault('reply_to_message_id', self.reply_id)
                 return method(chat_id=self.chat['id'], **kwargs)
             try:

@@ -181,6 +181,24 @@ def test_message_group():
     bot.messages.clear()
 
 
+def test_channel_post():
+    """Verify Preprocessor and Context handle channel_post updates correctly."""
+
+    bot = MockBot()
+    preprocessor = ntelebot.preprocess.Preprocessor()
+
+    chat = {'id': 2000, 'type': 'channel'}
+    text = '/test@user"name \u2022 message'
+    channel_post = {'message_id': 3000, 'chat': chat, 'author_signature': 'User Name', 'text': text}
+    ctx = preprocessor(bot, {'channel_post': channel_post})
+    assert ctx
+    assert ctx.type == 'message'
+    assert ctx.user is None
+    assert ctx.chat is chat
+    assert ctx.command == 'test'
+    assert ctx.text == '\u2022 message'
+
+
 def test_message_reply_variations():
     """Verify Context's reply_* methods."""
 
