@@ -117,6 +117,14 @@ class Context(object):
         self._conversations = conversations
         self.bot = bot
 
+    def forward(self, chat_id, **kwargs):
+        """Forward the incoming message to the target chat."""
+
+        return self.bot.forward_message(chat_id=chat_id,
+                                        from_chat_id=self.chat['id'],
+                                        message_id=self.reply_id,
+                                        **kwargs)
+
     def reply_html(self, text, *args, **kwargs):
         """Reply or edit the context's message with the given HTML fragment."""
 
