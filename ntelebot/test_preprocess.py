@@ -45,16 +45,16 @@ class MockBot(ntelebot.bot.Bot):
         return reply_to_message_id and 'REPLY' or 'SEND'
 
     @staticmethod
-    def send_document(chat_id=None, document=None):  # pylint: disable=unused-argument
-        return 'DOCUMENT'
+    def send_document(chat_id=None, document=None, caption=None):  # pylint: disable=unused-argument
+        return 'DOCUMENT=%s CAPTION=%s' % (document, caption)
 
     @staticmethod
-    def send_photo(chat_id=None, photo=None):  # pylint: disable=unused-argument
-        return 'PHOTO'
+    def send_photo(chat_id=None, photo=None, caption=None):  # pylint: disable=unused-argument
+        return 'PHOTO=%s CAPTION=%s' % (photo, caption)
 
     @staticmethod
     def send_sticker(chat_id=None, sticker=None):  # pylint: disable=unused-argument
-        return 'STICKER'
+        return 'STICKER=%s' % sticker
 
 
 def test_unknown_update():
@@ -494,12 +494,12 @@ def test_media():
     assert ctx.photo is None
     assert ctx.sticker == 'AAA1234'
 
-    assert ctx.reply_text('document:BOGUS DATA') == 'SEND'
-    assert ctx.reply_text('document:DOCUMENT_ID') == 'DOCUMENT'
-    assert ctx.reply_text('photo:BOGUS DATA') == 'SEND'
-    assert ctx.reply_text('photo:PHOTO_ID') == 'PHOTO'
+    assert ctx.reply_text('document:DOCUMENT_ID MY TEXT') == 'DOCUMENT=DOCUMENT_ID CAPTION=MY TEXT'
+    assert ctx.reply_text('document:DOCUMENT_ID') == 'DOCUMENT=DOCUMENT_ID CAPTION=None'
+    assert ctx.reply_text('photo:PHOTO_ID MY TEXT') == 'PHOTO=PHOTO_ID CAPTION=MY TEXT'
+    assert ctx.reply_text('photo:PHOTO_ID') == 'PHOTO=PHOTO_ID CAPTION=None'
     assert ctx.reply_text('sticker:BOGUS DATA') == 'SEND'
-    assert ctx.reply_text('sticker:STICKER_ID') == 'STICKER'
+    assert ctx.reply_text('sticker:STICKER_ID') == 'STICKER=STICKER_ID'
 
 
 def test_new_chat_members():

@@ -81,6 +81,7 @@ class Preprocessor(object):  # pylint: disable=too-few-public-methods
             ctx.user = payload['from']
             ctx.chat = payload['message']['chat']
             ctx.edit_id = payload['message']['message_id']
+            ctx.callback_id = payload['id']
             text = ntelebot.keyboardutil.decode(payload['message'], payload['data'])
             ctx.command, ctx.text = get_command(text, bot.username)
             ctx.prefix = ctx.text.partition(' ')[0]
@@ -111,6 +112,7 @@ class Context(object):
     forward_from = reply_from = None
     document = photo = sticker = None
     reply_id = edit_id = answer_id = None
+    callback_id = None
 
     def __init__(self, conversations, bot):
         self._conversations = conversations
@@ -157,12 +159,12 @@ class Context(object):
                 text = text_prefix + text
 
         if self.reply_id:
-            if text.startswith('document:') and ' ' not in text:
+            if text.startswith('document:'):
                 method = self.bot.send_document
-                kwargs['document'] = text[len('document:'):]
-            elif text.startswith('photo:') and ' ' not in text:
+                kwargs.update(zip(('document', 'caption'), text[len('document:'):].split(None, 1)))
+            elif text.startswith('photo:'):
                 method = self.bot.send_photo
-                kwargs['photo'] = text[len('photo:'):]
+                kwargs.update(zip(('photo', 'caption'), text[len('photo:'):].split(None, 1)))
             elif text.startswith('sticker:') and ' ' not in text:
                 method = self.bot.send_sticker
                 kwargs['sticker'] = text[len('sticker:'):]
