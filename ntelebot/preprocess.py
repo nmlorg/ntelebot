@@ -38,12 +38,15 @@ class Preprocessor(object):  # pylint: disable=too-few-public-methods
             ctx.chat = payload['chat']
             ctx.reply_id = payload['message_id']
 
-            text = payload.get('text', '')
-            if payload.get('forward_from'):
+            if payload.get('forward_date'):
+                ctx.forwarded = True
                 text = ''
-                ctx.forward_from = payload['forward_from']['id']
-            elif payload.get('reply_to_message'):
-                ctx.reply_from = payload['reply_to_message']['from']['id']
+                if payload.get('forward_from'):
+                    ctx.forward_from = payload['forward_from']['id']
+            else:
+                text = payload.get('text', '')
+                if payload.get('reply_to_message'):
+                    ctx.reply_from = payload['reply_to_message']['from']['id']
 
             if text.startswith('/start ') or text.startswith('/start@%s ' % bot.username.lower()):
                 text = text.split(None, 1)[1]
@@ -109,6 +112,7 @@ class Context(object):
     # pylint: disable=too-many-instance-attributes
     private = False
     type = user = chat = text = prefix = command = data = None
+    forwarded = False
     forward_from = reply_from = None
     document = photo = sticker = None
     reply_id = edit_id = answer_id = None

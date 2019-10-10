@@ -362,15 +362,25 @@ def test_forward_from():
     ctx = preprocessor(bot, {'message': message})
     assert ctx.command == 'acommand'
     assert ctx.text == 'arg'
+    assert not ctx.forwarded
     assert ctx.forward_from is None
     ctx.set_conversation('arg')
 
-    text = '/ignored'
-    other = {'id': 5000}
-    message = {'message_id': 2000, 'chat': chat, 'from': user, 'text': text, 'forward_from': other}
+    message['text'] = '/ignored'
+    message['forward_date'] = 1000
     ctx = preprocessor(bot, {'message': message})
     assert ctx.command == 'acommand'
     assert ctx.text == 'arg'
+    assert ctx.forwarded
+    assert ctx.forward_from is None
+    ctx.set_conversation('arg')
+
+    other = {'id': 5000}
+    message['forward_from'] = other
+    ctx = preprocessor(bot, {'message': message})
+    assert ctx.command == 'acommand'
+    assert ctx.text == 'arg'
+    assert ctx.forwarded
     assert ctx.forward_from == 5000
 
 
