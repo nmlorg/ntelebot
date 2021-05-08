@@ -1,7 +1,5 @@
 """A version of echobot3.py that uses ntelebot.dispatch.LoopDispatcher."""
 
-from __future__ import absolute_import, division, print_function, unicode_literals
-
 import pprint
 import sys
 

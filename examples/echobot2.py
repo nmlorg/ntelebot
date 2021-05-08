@@ -4,8 +4,6 @@ This is just offered as a form of documentation; it is much simpler to avoid usi
 have a good reason to use an explicit dispatcher.
 """
 
-from __future__ import absolute_import, division, print_function, unicode_literals
-
 import pprint
 import sys
 

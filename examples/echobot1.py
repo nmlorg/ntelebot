@@ -1,7 +1,5 @@
 """A quick bot that echoes all messages sent to it."""
 
-from __future__ import absolute_import, division, print_function, unicode_literals
-
 import pprint
 import sys
 
