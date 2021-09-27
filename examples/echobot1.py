@@ -8,7 +8,7 @@ import ntelebot
 
 def main(argv):  # pylint: disable=missing-docstring
     if len(argv) != 2:
-        print('Usage: %s BOT:TOKEN' % argv[0])
+        print(f'Usage: {argv[0]} BOT:TOKEN')
         print()
         print('Where BOT:TOKEN is a code received from following the process at '
               'https://core.telegram.org/bots#creating-a-new-bot.')

@@ -48,7 +48,7 @@ class Preprocessor(object):  # pylint: disable=too-few-public-methods
                 if payload.get('reply_to_message'):
                     ctx.reply_from = payload['reply_to_message']['from']['id']
 
-            if text.startswith('/start ') or text.startswith('/start@%s ' % bot.username.lower()):
+            if text.startswith('/start ') or text.startswith(f'/start@{bot.username.lower()} '):
                 text = text.split(None, 1)[1]
             if not text.startswith('/'):
                 tmp = ntelebot.deeplink.decode(text)
@@ -57,7 +57,7 @@ class Preprocessor(object):  # pylint: disable=too-few-public-methods
             if ctx.user and ctx.chat['type'] == 'private':
                 prev_text = self.conversations.pop(ctx.user['id'], None)
                 if not text.startswith('/') and prev_text:
-                    text = text and '%s %s' % (prev_text, text) or prev_text
+                    text = text and f'{prev_text} {text}' or prev_text
             if text != payload.get('text', ''):
                 payload['entities'] = []
             ctx.command, ctx.text = get_command(text, bot.username)
@@ -186,7 +186,7 @@ class Context(object):
             except ntelebot.errors.Forbidden:
                 orig_text = self.text
                 if self.command:
-                    orig_text = '/%s %s' % (self.command, orig_text)
+                    orig_text = f'/{self.command} {orig_text}'
                 return self.bot.send_message(chat_id=self.chat['id'],
                                              text=self.bot.encode_link(
                                                  orig_text, "Let's take this to a private chat!"),
@@ -204,7 +204,7 @@ class Context(object):
         """If the next message from this user does not begin with a slash, prepend text."""
 
         if not text.startswith('/') and self.command:
-            text = '/%s %s' % (self.command, text)
+            text = f'/{self.command} {text}'
         self._conversations[self.user['id']] = text
 
     def split(self, num):

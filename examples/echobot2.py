@@ -23,7 +23,7 @@ def dispatch(bot, update):
 
 def main(argv):  # pylint: disable=missing-docstring
     if len(argv) < 2:
-        print('Usage: %s BOT:TOKEN [BOT:TOKEN [BOT:TOKEN [...]]]' % argv[0])
+        print(f'Usage: {argv[0]} BOT:TOKEN [BOT:TOKEN [BOT:TOKEN [...]]]')
         print()
         print('Where BOT:TOKEN is one or more codes received from following the process at '
               'https://core.telegram.org/bots#creating-a-new-bot.')

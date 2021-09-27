@@ -40,10 +40,10 @@ def encode(text):
 def encode_link(username, command, text=None):
     """Generate an HTML fragment that links to a deeplink back to the bot."""
 
-    return '<a href="%s">%s</a>' % (cgi_escape(encode_url(username, command)), text or command)
+    return f'<a href="{cgi_escape(encode_url(username, command))}">{text or command}</a>'
 
 
 def encode_url(username, command):
     """Generate a deeplink URL."""
 
-    return 'https://t.me/%s?start=%s' % (username, encode(command))
+    return f'https://t.me/{username}?start={encode(command)}'

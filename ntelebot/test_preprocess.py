@@ -46,15 +46,15 @@ class MockBot(ntelebot.bot.Bot):
 
     @staticmethod
     def send_document(chat_id=None, document=None, caption=None):  # pylint: disable=unused-argument
-        return 'DOCUMENT=%s CAPTION=%s' % (document, caption)
+        return f'DOCUMENT={document} CAPTION={caption}'
 
     @staticmethod
     def send_photo(chat_id=None, photo=None, caption=None):  # pylint: disable=unused-argument
-        return 'PHOTO=%s CAPTION=%s' % (photo, caption)
+        return f'PHOTO={photo} CAPTION={caption}'
 
     @staticmethod
     def send_sticker(chat_id=None, sticker=None):  # pylint: disable=unused-argument
-        return 'STICKER=%s' % sticker
+        return f'STICKER={sticker}'
 
 
 def test_unknown_update():

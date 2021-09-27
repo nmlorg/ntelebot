@@ -13,7 +13,7 @@ class Bot(object):  # pylint: disable=too-few-public-methods
     def __init__(self, token, timeout=12):
         assert token.count(':') == 1 and token.split(':')[0].isdigit() and '/' not in token, token
         self.token = token
-        self.url = '%s%s/' % (self.BASE_URL, token)
+        self.url = f'{self.BASE_URL}{token}/'
         self.timeout = timeout
 
     def __getattr__(self, k):

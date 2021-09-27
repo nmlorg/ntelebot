@@ -41,8 +41,8 @@ def fix(keyboard, maxlen=64):
     prefixes, mapping = shorten_lines((button['callback_data'] for button in broken), maxlen)
     for button in broken:
         button['callback_data'] = mapping[button['callback_data']]
-    return '<a href="%s%s">\u200b</a>' % (
-        PREFIX, base64.urlsafe_b64encode('\0'.join(prefixes).encode('utf-8')).decode('ascii'))
+    path = base64.urlsafe_b64encode('\0'.join(prefixes).encode('utf-8')).decode('ascii')
+    return f'<a href="{PREFIX}{path}">\u200b</a>'
 
 
 def shorten_lines(lines, maxlen):
@@ -61,11 +61,11 @@ def shorten_lines(lines, maxlen):
                 break
         else:
             i = len(prefixes)
-            prefixcode = '\0%i\0' % i
+            prefixcode = f'\0{i}\0'
             # The new prefix will be as small as possible so the remaining line--including the
             # encoded prefix number--is exactly maxlen bytes long. This should guarantee the maximum
             # possible reuse between lines.
             prefix = line[:-(maxlen - len(prefixcode))]
             prefixes.append(prefix)
-        mapping[line] = '\0%i\0%s' % (i, line[len(prefix):])
+        mapping[line] = f'\0{i}\0{line[len(prefix):]}'
     return prefixes, mapping
