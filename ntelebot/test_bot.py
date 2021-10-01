@@ -4,8 +4,6 @@ import pytest
 
 import ntelebot
 
-TEST_BOT_TOKEN = '1824972844:AAFKcZlNoyGnA2rkdemlHCrJ5432fXYm9dE'
-
 
 def test_token():
     """Verify the token is used correctly to construct the base URL."""
@@ -26,7 +24,7 @@ def test_getattr_magic():
     assert ntelebot.bot.Bot('1234:test').get_me.url == 'https://api.telegram.org/bot1234:test/getme'
 
 
-def test_request():
+def test_request(bot_token):
     """Verify simple live echo requests return the appropriate response."""
 
     # From https://core.telegram.org/bots/api#authorizing-your-bot.
@@ -35,9 +33,9 @@ def test_request():
     with pytest.raises(ntelebot.errors.Unauthorized):
         bot.get_me()
 
-    # From https://github.com/python-telegram-bot/python-telegram-bot/blob/master/tests/bots.py.
+    assert bot_token, 'Set TEST_BOT_TOKEN in your environment before running this test.'
 
-    bot = ntelebot.bot.Bot(TEST_BOT_TOKEN)
+    bot = ntelebot.bot.Bot(bot_token)
     bot.get_dummy.respond(real_http=True)
     with pytest.raises(ntelebot.errors.NotFound):
         bot.get_dummy()
@@ -47,13 +45,13 @@ def test_request():
         'can_join_groups': False,
         'can_read_all_group_messages': False,
         'first_name': 'ntelebot',
-        'id': int(TEST_BOT_TOKEN.split(':', 1)[0]),
+        'id': int(bot_token.split(':', 1)[0]),
         'is_bot': True,
         'supports_inline_queries': False,
         'username': 'ntelebot',
     }
 
-    bot = ntelebot.bot.Bot(TEST_BOT_TOKEN, timeout=2)
+    bot = ntelebot.bot.Bot(bot_token, timeout=2)
     bot.get_updates.respond(real_http=True)
     offset = None
     updates = bot.get_updates(timeout=0)
