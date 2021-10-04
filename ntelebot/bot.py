@@ -1,5 +1,8 @@
 """A simple implementation of https://core.telegram.org/bots/api."""
 
+import io
+import json
+
 import requests
 
 import ntelebot
@@ -52,7 +55,7 @@ class _Request(object):  # pylint: disable=too-few-public-methods
 
     def __call__(self, **params):
         try:
-            data = requests.post(self.url, timeout=self.timeout, json=params).json()
+            data = requests.post(self.url, timeout=self.timeout, **_prepare(params)).json()
         except requests.exceptions.ReadTimeout as exc:
             raise ntelebot.errors.Timeout(exc)
         if data['ok']:
@@ -66,3 +69,29 @@ class _Request(object):  # pylint: disable=too-few-public-methods
         if data['error_code'] == 409:
             raise ntelebot.errors.Conflict(data)
         raise ntelebot.errors.Error(data)
+
+
+def _prepare(params):
+    files = {}
+    data = _separate_files(files, params)
+
+    if not files:
+        return {'json': data}
+
+    # See https://github.com/nmlorg/ntelebot/issues/7#issuecomment-933581503.
+    for key, value in data.items():
+        if not isinstance(value, str):
+            data[key] = json.dumps(value)
+    return {'data': data, 'files': files}
+
+
+def _separate_files(files, params):
+    if isinstance(params, dict):
+        return {k: _separate_files(files, v) for k, v in params.items()}
+    if isinstance(params, (list, tuple)):
+        return [_separate_files(files, v) for v in params]
+    if isinstance(params, io.IOBase):
+        attachid = f'file{len(files)}'
+        files[attachid] = ('', params.read())
+        return f'attach://{attachid}'
+    return params
