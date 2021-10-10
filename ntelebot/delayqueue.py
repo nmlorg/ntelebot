@@ -5,7 +5,7 @@ import queue
 import time
 
 
-class DelayQueue(queue.PriorityQueue, object):
+class DelayQueue(queue.PriorityQueue):
     """A queue of (when, item) that doesn't return items until their target time has passed."""
 
     def _init(self, maxsize):

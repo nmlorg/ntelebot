@@ -8,7 +8,7 @@ import requests
 import ntelebot
 
 
-class Bot(object):  # pylint: disable=too-few-public-methods
+class Bot:  # pylint: disable=too-few-public-methods
     """A simple implementation of https://core.telegram.org/bots/api."""
 
     BASE_URL = 'https://api.telegram.org/bot'
@@ -47,7 +47,7 @@ class Bot(object):  # pylint: disable=too-few-public-methods
         return ntelebot.deeplink.encode_url(self.username, command)
 
 
-class _Request(object):  # pylint: disable=too-few-public-methods
+class _Request:  # pylint: disable=too-few-public-methods
 
     def __init__(self, url, timeout):
         self.url = url

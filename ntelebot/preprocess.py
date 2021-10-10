@@ -3,7 +3,7 @@
 import ntelebot
 
 
-class Preprocessor(object):  # pylint: disable=too-few-public-methods
+class Preprocessor:  # pylint: disable=too-few-public-methods
     """Non-universal, but fairly versatile update preprocessor."""
 
     def __init__(self):
@@ -100,7 +100,7 @@ class Preprocessor(object):  # pylint: disable=too-few-public-methods
             return ctx
 
 
-class Context(object):
+class Context:
     """Normalized presentation of an incoming message or event.
 
     This primarily standardizes how the payload text is found (update.message.text,

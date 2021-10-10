@@ -9,7 +9,7 @@ import time
 import ntelebot
 
 
-class Loop(object):
+class Loop:
     """A thread-based long-poll watcher and synchronizer."""
 
     stopped = False

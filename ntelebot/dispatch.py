@@ -5,7 +5,7 @@ import inspect
 import ntelebot
 
 
-class Dispatcher(object):
+class Dispatcher:
     """A collection of callbacks that can be added together."""
 
     def __init__(self):

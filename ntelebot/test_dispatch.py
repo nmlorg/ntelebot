@@ -20,7 +20,7 @@ class MockBot(ntelebot.bot.Bot):
         return {'username': 'username'}
 
 
-class MockContext(object):  # pylint: disable=missing-docstring,too-few-public-methods
+class MockContext:  # pylint: disable=missing-docstring,too-few-public-methods
     type = prefix = command = None
 
 
@@ -139,20 +139,19 @@ def test_dispatch_module():
 
     assert ntelebot.dispatch.get_callback(dispatch_function) is dispatch_function
 
-    class EmptyModule(object):  # pylint: disable=missing-docstring,too-few-public-methods
+    class EmptyModule:  # pylint: disable=missing-docstring,too-few-public-methods
         pass
 
     assert ntelebot.dispatch.get_callback(EmptyModule) is None
 
-    class PerUpdateModule(object):  # pylint: disable=missing-docstring,too-few-public-methods
+    class PerUpdateModule:  # pylint: disable=missing-docstring,too-few-public-methods
 
         def __init__(self, ctx):  # pragma: no cover
             pass
 
     assert ntelebot.dispatch.get_callback(PerUpdateModule) is PerUpdateModule
 
-    class PerDispatcherModule(object):
-        # pylint: disable=missing-docstring
+    class PerDispatcherModule:  # pylint: disable=missing-docstring
 
         def dispatch(self, ctx):  # pragma: no cover
             pass

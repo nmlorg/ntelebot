@@ -24,8 +24,7 @@ def test_add():
         {'update_id': 1, 'message': {'text': 'second'}},
     ]  # yapf: disable
 
-    class MockBot(object):
-        # pylint: disable=missing-docstring,too-few-public-methods
+    class MockBot:  # pylint: disable=missing-docstring,too-few-public-methods
 
         timeout = 3
         token = 'mock:bot'
@@ -55,8 +54,7 @@ def test_remove():
         {'update_id': 1, 'message': {'text': 'second'}},
     ]  # yapf: disable
 
-    class MockBot(object):
-        # pylint: disable=missing-docstring,too-few-public-methods
+    class MockBot:  # pylint: disable=missing-docstring,too-few-public-methods
 
         timeout = 3
         token = 'mock:bot'

@@ -6,7 +6,7 @@ import sys
 import ntelebot
 
 
-class Dispatcher(object):  # pylint: disable=too-few-public-methods
+class Dispatcher:  # pylint: disable=too-few-public-methods
     """Print all updates and echo back all messages."""
 
     def __init__(self):
