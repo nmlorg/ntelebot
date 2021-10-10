@@ -62,7 +62,7 @@ class LoopDispatcher(Dispatcher):
     """Non-universal, but fairly versatile update dispatcher."""
 
     def __init__(self, preprocessor=None):
-        super(LoopDispatcher, self).__init__()
+        super().__init__()
         self.preprocessor = preprocessor or ntelebot.preprocess.Preprocessor()
 
     def __call__(self, bot, update):
@@ -70,7 +70,7 @@ class LoopDispatcher(Dispatcher):
 
         ctx = self.preprocessor(bot, update)
         if ctx:
-            return super(LoopDispatcher, self).__call__(ctx)
+            return super().__call__(ctx)
         return False
 
 

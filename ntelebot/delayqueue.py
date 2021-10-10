@@ -9,7 +9,7 @@ class DelayQueue(queue.PriorityQueue):
     """A queue of (when, item) that doesn't return items until their target time has passed."""
 
     def _init(self, maxsize):
-        super(DelayQueue, self)._init(maxsize)
+        super()._init(maxsize)
         self.__subqueue = []
 
     def puthourly(self, offset, item, jitter=0):
@@ -32,7 +32,7 @@ class DelayQueue(queue.PriorityQueue):
     def putwhen(self, when, item):
         """Schedule item to be returned when time.time() >= when."""
 
-        return super(DelayQueue, self).put((when, time.time(), item))
+        return super().put((when, time.time(), item))
 
     def put(self, item):  # pylint: disable=arguments-differ
         return self.putwhen(0, item)
@@ -49,7 +49,7 @@ class DelayQueue(queue.PriorityQueue):
                 delay = when - now
 
             try:
-                record = super(DelayQueue, self).get(True, delay)
+                record = super().get(True, delay)
             except queue.Empty:
                 pass
             else:

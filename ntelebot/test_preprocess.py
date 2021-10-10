@@ -7,7 +7,7 @@ class MockBot(ntelebot.bot.Bot):
     # pylint: disable=missing-docstring
 
     def __init__(self):
-        super(MockBot, self).__init__('1234:TOKEN')
+        super().__init__('1234:TOKEN')
         self.messages = {}
         self.parse_modes = {}
         self.queries = {}
