@@ -56,3 +56,14 @@ def test_adapter(telegram):
         'supports_inline_queries': False,
         'username': 'test1234bot',
     }
+
+
+def test_params(telegram):
+    assert telegram.create_bot(1234).token == 'MTIzNA'
+
+    assert ntelebot.bot.Bot('1234:MTIzNA').echo_params(a=1, b='\u2022', c=True) == {
+        'a': 1,
+        'b': '\u2022',
+        'c': True,
+        'count': 3,
+    }

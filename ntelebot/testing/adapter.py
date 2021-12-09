@@ -28,11 +28,17 @@ class Adapter(requests.adapters.BaseAdapter):
         botid, token, method = match.groups()
         botid = int(botid)
 
+        ctype = request.headers.get('content-type')
+        if ctype == 'application/json':
+            params = json.loads(request.body)
+        else:
+            params = {}
+
         resp = requests.Response()
         resp.request = request
         resp.headers['content-type'] = 'application/json'
 
-        resp.status_code, data = self._handle(botid, token, method)
+        resp.status_code, data = self._handle(botid, token, method, params)
 
         if resp.status_code == 200:
             data = {'ok': True, 'result': data}
@@ -42,7 +48,7 @@ class Adapter(requests.adapters.BaseAdapter):
 
         return resp
 
-    def _handle(self, botid, token, method):
+    def _handle(self, botid, token, method, params):
         bot = self.telegram.bots.get(botid)
         if not bot or bot.token != token:
             return 401, 'Unauthorized'
@@ -51,7 +57,7 @@ class Adapter(requests.adapters.BaseAdapter):
         if not method:
             return 404, 'Not Found'
 
-        return 200, method()
+        return 200, method(**params)
 
     def close(self):
         pass

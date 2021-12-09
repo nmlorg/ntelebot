@@ -17,6 +17,11 @@ class TelegramBot:
             'supports_inline_queries': False,
         }
 
+    @staticmethod
+    def api_echoparams(**kwargs):
+        kwargs['count'] = len(kwargs)
+        return kwargs
+
     def api_getme(self):
         return self.conf
 
