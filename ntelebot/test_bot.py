@@ -32,18 +32,15 @@ def test_request(bot_token):
 
     # From https://core.telegram.org/bots/api#authorizing-your-bot.
     bot = ntelebot.bot.Bot('123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11')
-    bot.get_me.respond(real_http=True)
     with pytest.raises(ntelebot.errors.Unauthorized):
         bot.get_me()
 
     assert bot_token, 'Set TEST_BOT_TOKEN in your environment before running this test.'
 
     bot = ntelebot.bot.Bot(bot_token)
-    bot.get_dummy.respond(real_http=True)
     with pytest.raises(ntelebot.errors.NotFound):
         bot.get_dummy()
 
-    bot.get_me.respond(real_http=True)
     assert bot.get_me() == {
         'can_join_groups': False,
         'can_read_all_group_messages': False,
@@ -55,7 +52,6 @@ def test_request(bot_token):
     }
 
     bot = ntelebot.bot.Bot(bot_token, timeout=2)
-    bot.get_updates.respond(real_http=True)
     offset = None
     updates = bot.get_updates(timeout=0)
     if updates:
