@@ -47,7 +47,7 @@ class Adapter(requests.adapters.BaseAdapter):
         if not bot or bot.token != token:
             return 401, 'Unauthorized'
 
-        method = getattr(bot, method, None)
+        method = getattr(bot, 'api_' + method, None)
         if not method:
             return 404, 'Not Found'
 

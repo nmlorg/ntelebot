@@ -17,7 +17,7 @@ class TelegramBot:
             'supports_inline_queries': False,
         }
 
-    def getme(self):
+    def api_getme(self):
         return self.conf
 
 
