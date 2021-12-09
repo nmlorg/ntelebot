@@ -16,7 +16,7 @@ def test_adapter(telegram):
     with pytest.raises(ntelebot.errors.Unauthorized):
         ntelebot.bot.Bot('1234:BoGuS').bogus_method()
 
-    assert telegram.create_bot(1234) == 'MTIzNA'
+    assert telegram.create_bot(1234).token == 'MTIzNA'
 
     resp = requests.get('https://api.telegram.org/bot1234:BoGuS/bogusmethod')
     assert resp.status_code == 401

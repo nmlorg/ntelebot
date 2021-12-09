@@ -28,4 +28,4 @@ class Telegram:
 
     def create_bot(self, botid):
         self.bots[botid] = bot = TelegramBot(self, botid)
-        return bot.token
+        return bot
