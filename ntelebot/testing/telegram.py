@@ -1,36 +1,29 @@
 import base64
 
 
-class TelegramBot:
+class _Bot:
 
-    def __init__(self, _telegram, botid):
-        self.telegram = _telegram
-        self.id = botid
-        self.token = base64.urlsafe_b64encode(str(botid).encode()).decode().rstrip('=')
+    def __init__(self, telegram, userid):
+        self._telegram = telegram
+        self.id = userid
+        self.token = base64.urlsafe_b64encode(str(userid).encode()).decode().rstrip('=')
         self.conf = {
-            'id': botid,
+            'id': userid,
             'is_bot': True,
-            'first_name': f'test{botid}',
-            'username': f'test{botid}bot',
+            'first_name': f'test{userid}',
+            'username': f'test{userid}bot',
             'can_join_groups': True,
             'can_read_all_group_message': False,
             'supports_inline_queries': False,
         }
 
-    @staticmethod
-    def api_echoparams(**kwargs):
-        kwargs['count'] = len(kwargs)
-        return kwargs
-
-    def api_getme(self):
-        return self.conf
-
 
 class Telegram:
 
     def __init__(self):
-        self.bots = {}
+        self.users = {}
 
-    def create_bot(self, botid):
-        self.bots[botid] = bot = TelegramBot(self, botid)
+    def create_bot(self, userid):
+        assert userid not in self.users
+        self.users[userid] = bot = _Bot(self, userid)
         return bot

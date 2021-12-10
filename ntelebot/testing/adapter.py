@@ -3,6 +3,8 @@ import re
 
 import requests
 
+import ntelebot.testing.telegram
+
 
 class NoMockAddress(Exception):
 
@@ -16,9 +18,10 @@ class NoMockAddress(Exception):
 
 class Adapter(requests.adapters.BaseAdapter):
 
-    def __init__(self, telegram):
+    def __init__(self, telegram, botapi):
         super().__init__()
-        self.telegram = telegram
+        self._telegram = telegram
+        self._botapi = botapi
 
     def send(self, request, **unused_kwargs):
         match = re.match('https://api.telegram.org/bot([0-9]+):([a-zA-Z0-9-]+)/([a-z]+)$',
@@ -49,15 +52,15 @@ class Adapter(requests.adapters.BaseAdapter):
         return resp
 
     def _handle(self, botid, token, method, params):
-        bot = self.telegram.bots.get(botid)
-        if not bot or bot.token != token:
+        bot = self._telegram.users.get(botid)
+        if not isinstance(bot, ntelebot.testing.telegram._Bot) or bot.token != token:
             return 401, 'Unauthorized'
 
-        method = getattr(bot, 'api_' + method, None)
+        method = getattr(self._botapi, 'api_' + method, None)
         if not method:
             return 404, 'Not Found'
 
-        return 200, method(**params)
+        return 200, method(bot, **params)
 
     def close(self):
         pass
