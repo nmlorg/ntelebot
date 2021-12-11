@@ -12,6 +12,10 @@ class Error(Exception):
             self.__dict__.update(data)
 
 
+class BadRequest(Error):
+    """HTTP 400 Bad Request."""
+
+
 class Conflict(Error):
     """HTTP 409 Conflict."""
 

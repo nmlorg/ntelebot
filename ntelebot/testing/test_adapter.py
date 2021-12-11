@@ -39,7 +39,7 @@ def test_adapter(telegram):
         'result': {
             'can_join_groups': True,
             'can_read_all_group_message': False,
-            'first_name': 'test1234',
+            'first_name': 'Test Bot 1234',
             'id': 1234,
             'is_bot': True,
             'supports_inline_queries': False,
@@ -50,7 +50,7 @@ def test_adapter(telegram):
     assert ntelebot.bot.Bot('1234:MTIzNA').get_me() == {
         'can_join_groups': True,
         'can_read_all_group_message': False,
-        'first_name': 'test1234',
+        'first_name': 'Test Bot 1234',
         'id': 1234,
         'is_bot': True,
         'supports_inline_queries': False,

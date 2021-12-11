@@ -10,4 +10,20 @@ class BotAPI:
 
     @staticmethod
     def api_getme(bot):
-        return bot.conf
+        me = {}
+        me.update(bot.conf)
+        me.update(bot.about)
+        return me
+
+    def api_sendmessage(self, bot, chat_id=None, text=None, **unused_kwargs):
+        try:
+            view = self._telegram.get_chat_view(bot, chat_id)
+        except self._telegram.CanNotSend as exc:
+            raise self.Error(403, "Forbidden: bot can't initiate conversation with a user") from exc
+        except self._telegram.ChatNotFound as exc:
+            raise self.Error(400, 'Bad Request: chat not found') from exc
+
+        return view.send_message(text)
+
+    class Error(Exception):
+        pass

@@ -60,6 +60,8 @@ class _Request:  # pylint: disable=too-few-public-methods
             raise ntelebot.errors.Timeout(exc)
         if data['ok']:
             return data['result']
+        if data['error_code'] == 400:
+            raise ntelebot.errors.BadRequest(data)
         if data['error_code'] == 401:
             raise ntelebot.errors.Unauthorized(data)
         if data['error_code'] == 403:

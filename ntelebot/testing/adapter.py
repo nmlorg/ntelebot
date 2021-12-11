@@ -60,7 +60,10 @@ class Adapter(requests.adapters.BaseAdapter):
         if not method:
             return 404, 'Not Found'
 
-        return 200, method(bot, **params)
+        try:
+            return 200, method(bot, **params)
+        except self._botapi.Error as exc:
+            return exc.args
 
     def close(self):
         pass
