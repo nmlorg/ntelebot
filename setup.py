@@ -9,5 +9,5 @@ setuptools.setup(
     description='A simple implementation of https://core.telegram.org/bots/api.',
     url='https://github.com/nmlorg/ntelebot',
     packages=setuptools.find_packages(include=('ntelebot', 'ntelebot.*')),
-    python_requires='>=3.6',
+    python_requires='>=3.8',
     install_requires=['requests'])
