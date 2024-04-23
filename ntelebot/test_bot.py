@@ -45,6 +45,7 @@ def test_request(bot_token):
 
     bot.get_me.respond(real_http=True)
     assert bot.get_me() == {
+        'can_connect_to_business': False,
         'can_join_groups': False,
         'can_read_all_group_messages': False,
         'first_name': 'ntelebot',
