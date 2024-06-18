@@ -10,6 +10,14 @@ dependencies = [
     'requests',
 ]
 
+[project.optional-dependencies]
+dev = [
+    'pylint',
+    'pytest-cov',
+    'pytest',
+    'requests-mock',
+]
+
 [project.urls]
 Homepage = 'https://github.com/nmlorg/ntelebot'
 Issues = 'https://github.com/nmlorg/ntelebot/issues'

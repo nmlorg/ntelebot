@@ -12,5 +12,4 @@ fi
 source .venv/bin/activate
 
 pip install -U pip setuptools
-pip install -U -e .
-pip install -U -r requirements-dev.txt build twine
+pip install -U -e .[dev] build twine
