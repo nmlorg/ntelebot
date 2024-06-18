@@ -34,7 +34,7 @@ addopts = '-vv --cov=ntelebot --cov-report=term:skip-covered --cov-report=html'
 testpaths = ['ntelebot']
 
 [tool.setuptools.packages.find]
-include = ['ntelebot']
+include = ['ntelebot', 'ntelebot.*']
 
 [tool.yapf]
 based_on_style = 'google'
