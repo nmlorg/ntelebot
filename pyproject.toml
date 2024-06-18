@@ -1,0 +1,33 @@
+[project]
+name = "ntelebot"
+version = "0.4.1"
+dependencies = [
+    "requests",
+]
+requires-python = ">=3.8"
+authors = [
+  {name = "Daniel Reed", email = "nmlorg@gmail.com"},
+]
+description = "A simple implementation of https://core.telegram.org/bots/api."
+
+[project.urls]
+Homepage = "https://github.com/nmlorg/ntelebot"
+Issues = "https://github.com/nmlorg/ntelebot/issues"
+
+[tool.pylint.'MESSAGES CONTROL']
+disable = [
+    "consider-using-ternary",
+    "duplicate-code",
+    "inconsistent-return-statements",
+]
+
+[tool.pytest.ini_options]
+addopts = "-vv --cov=ntelebot --cov-report=term:skip-covered --cov-report=html"
+testpaths = ["ntelebot"]
+
+[tool.setuptools.packages.find]
+include = ["ntelebot"]
+
+[tool.yapf]
+based_on_style = "google"
+column_limit = 100
