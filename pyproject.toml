@@ -1,33 +1,33 @@
 [project]
-name = "ntelebot"
-version = "0.4.1"
-dependencies = [
-    "requests",
-]
-requires-python = ">=3.8"
+name = 'ntelebot'
+version = '0.4.1'
+description = 'A simple implementation of https://core.telegram.org/bots/api.'
 authors = [
-  {name = "Daniel Reed", email = "nmlorg@gmail.com"},
+    {name = 'Daniel Reed', email = 'nmlorg@gmail.com'},
 ]
-description = "A simple implementation of https://core.telegram.org/bots/api."
+requires-python = '>=3.8'
+dependencies = [
+    'requests',
+]
 
 [project.urls]
-Homepage = "https://github.com/nmlorg/ntelebot"
-Issues = "https://github.com/nmlorg/ntelebot/issues"
+Homepage = 'https://github.com/nmlorg/ntelebot'
+Issues = 'https://github.com/nmlorg/ntelebot/issues'
 
 [tool.pylint.'MESSAGES CONTROL']
 disable = [
-    "consider-using-ternary",
-    "duplicate-code",
-    "inconsistent-return-statements",
+    'consider-using-ternary',
+    'duplicate-code',
+    'inconsistent-return-statements',
 ]
 
 [tool.pytest.ini_options]
-addopts = "-vv --cov=ntelebot --cov-report=term:skip-covered --cov-report=html"
-testpaths = ["ntelebot"]
+addopts = '-vv --cov=ntelebot --cov-report=term:skip-covered --cov-report=html'
+testpaths = ['ntelebot']
 
 [tool.setuptools.packages.find]
-include = ["ntelebot"]
+include = ['ntelebot']
 
 [tool.yapf]
-based_on_style = "google"
+based_on_style = 'google'
 column_limit = 100
