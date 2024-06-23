@@ -30,7 +30,8 @@ disable = [
 ]
 
 [tool.pytest.ini_options]
-addopts = '-vv --cov=ntelebot --cov-report=term:skip-covered --cov-report=html'
+addopts = '--cov=ntelebot --cov-report=term:skip-covered --cov-report=html'
+consider_namespace_packages = true
 testpaths = ['ntelebot']
 
 [tool.setuptools.packages.find]
