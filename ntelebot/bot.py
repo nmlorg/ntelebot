@@ -68,6 +68,10 @@ class _Request:  # pylint: disable=too-few-public-methods
             raise ntelebot.errors.NotFound(data)
         if data['error_code'] == 409:
             raise ntelebot.errors.Conflict(data)
+        if data['error_code'] == 400:
+            if 'message is not modified' in data['description']:
+                raise ntelebot.errors.Unmodified(data)
+
         raise ntelebot.errors.Error(data)
 
 

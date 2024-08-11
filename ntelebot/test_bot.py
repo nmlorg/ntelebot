@@ -27,7 +27,7 @@ def test_getattr_magic():
     assert ntelebot.bot.Bot('1234:test').get_me.url == 'https://api.telegram.org/bot1234:test/getme'
 
 
-def test_request(bot_token):
+def test_request(bot_token, bot_test_chat):
     """Verify simple live echo requests return the appropriate response."""
 
     # From https://core.telegram.org/bots/api#authorizing-your-bot.
@@ -64,6 +64,26 @@ def test_request(bot_token):
         offset = updates[-1]['update_id'] + 1
     with pytest.raises(ntelebot.errors.Timeout):
         bot.get_updates(offset=offset, timeout=3)
+
+    assert bot_test_chat, 'Set TEST_BOT_CHAT_ID in your environment before running this test.'
+
+    bot.send_message.respond(real_http=True)
+    message1 = bot.send_message(chat_id=bot_test_chat, text='test_request initial')
+    assert message1['text'] == 'test_request initial'
+
+    bot.edit_message_text.respond(real_http=True)
+    message2 = bot.edit_message_text(chat_id=bot_test_chat,
+                                     message_id=message1['message_id'],
+                                     text='test_request edited')
+    assert message2['text'] == 'test_request edited'
+
+    with pytest.raises(ntelebot.errors.Unmodified):
+        bot.edit_message_text(chat_id=bot_test_chat,
+                              message_id=message1['message_id'],
+                              text='test_request edited')
+
+    bot.delete_message.respond(real_http=True)
+    assert bot.delete_message(chat_id=bot_test_chat, message_id=message1['message_id'])
 
 
 def test_prepare(monkeypatch):

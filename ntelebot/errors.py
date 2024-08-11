@@ -30,3 +30,7 @@ class Timeout(Error):
 
 class Unauthorized(Error):
     """HTTP 401 Unauthorized."""
+
+
+class Unmodified(Error):
+    """HTTP 400, Telegram MESSAGE_NOT_MODIFIED."""

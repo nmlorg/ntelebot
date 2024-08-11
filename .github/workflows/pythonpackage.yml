@@ -24,6 +24,7 @@ jobs:
         python -m pip install -e .[dev]
     - name: Test with pytest
       env:
+        TEST_BOT_CHAT_ID: ${{ vars.TEST_BOT_CHAT_ID }}
         TEST_BOT_TOKEN: ${{ secrets.TEST_BOT_TOKEN }}
       run: |
         pytest

@@ -21,6 +21,13 @@ def _bot_mock(monkeypatch, requests_mock):
 
 
 @pytest.fixture
+def bot_test_chat():
+    """The chat_id of a person or group the bot can send messages to."""
+
+    return os.getenv('TEST_BOT_CHAT_ID')
+
+
+@pytest.fixture
 def bot_token():
     """A genuine token from https://core.telegram.org/bots#3-how-do-i-create-a-bot."""
 
