@@ -68,9 +68,12 @@ class _Request:  # pylint: disable=too-few-public-methods
             raise ntelebot.errors.NotFound(data)
         if data['error_code'] == 409:
             raise ntelebot.errors.Conflict(data)
-        if data['error_code'] == 400:
-            if 'message is not modified' in data['description']:
+        if data['error_code'] == 400 and data['description'].startswith('Bad Request: '):
+            desc = data['description'][len('Bad Request: '):].split(':', 1)[0].lower()
+            if desc == 'message is not modified':
                 raise ntelebot.errors.Unmodified(data)
+            if desc in {'message is too long', 'message caption is too long'}:
+                raise ntelebot.errors.TooLong(data)
 
         raise ntelebot.errors.Error(data)
 

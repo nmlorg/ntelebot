@@ -28,6 +28,10 @@ class Timeout(Error):
     """Telegram didn't respond within the bot's request timeout."""
 
 
+class TooLong(Error):
+    """HTTP 400, Telegram MESSAGE_TOO_LONG."""
+
+
 class Unauthorized(Error):
     """HTTP 401 Unauthorized."""
 
