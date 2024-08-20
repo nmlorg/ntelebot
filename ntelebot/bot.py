@@ -3,8 +3,6 @@
 import io
 import json
 
-import requests
-
 import ntelebot
 
 
@@ -55,8 +53,8 @@ class _Request:  # pylint: disable=too-few-public-methods
 
     def __call__(self, **params):
         try:
-            data = requests.post(self.url, timeout=self.timeout, **_prepare(params)).json()
-        except requests.exceptions.ReadTimeout as exc:
+            data = ntelebot.requests.post(self.url, timeout=self.timeout, **_prepare(params)).json()
+        except ntelebot.requests.ReadTimeout as exc:
             raise ntelebot.errors.Timeout(exc)
         if data['ok']:
             return data['result']

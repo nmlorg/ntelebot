@@ -10,3 +10,4 @@ from ntelebot import keyboardutil
 from ntelebot import limits
 from ntelebot import loop
 from ntelebot import preprocess
+from ntelebot import requests
