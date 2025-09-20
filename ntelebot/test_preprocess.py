@@ -32,6 +32,7 @@ class MockBot(ntelebot.bot.Bot):
 
     def send_message(  # pylint: disable=unused-argument,too-many-arguments
             self,
+            *,
             chat_id=None,
             text=None,
             reply_to_message_id=None,
