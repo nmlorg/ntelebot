@@ -16,27 +16,22 @@ class Preprocessor:  # pylint: disable=too-few-public-methods
 
         payload = update.get('message') or update.get('channel_post')
 
-        if payload and payload.get('new_chat_members'):
-            ctx.type = 'join'
-            ctx.user = payload.get('from')
-            ctx.chat = payload['chat']
-            ctx.reply_id = payload['message_id']
-            ctx.data = payload['new_chat_members']
-            return ctx
-
-        if payload and payload.get('pinned_message'):
-            ctx.type = 'pin'
-            ctx.user = payload.get('from')
-            ctx.chat = payload['chat']
-            ctx.reply_id = payload['message_id']
-            ctx.data = payload['pinned_message']
-            return ctx
-
         if payload:
-            ctx.type = 'message'
             ctx.user = payload.get('from')
             ctx.chat = payload['chat']
             ctx.reply_id = payload['message_id']
+
+            if (new_chat_members := payload.get('new_chat_members')):
+                ctx.type = 'join'
+                ctx.data = new_chat_members
+                return ctx
+
+            if (pinned_message := payload.get('pinned_message')):
+                ctx.type = 'pin'
+                ctx.data = pinned_message
+                return ctx
+
+            ctx.type = 'message'
 
             if payload.get('forward_date'):
                 ctx.forwarded = True
