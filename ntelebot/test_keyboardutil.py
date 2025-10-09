@@ -1,34 +1,19 @@
 """Tests for ntelebot.keyboardutil."""
 
-import base64
-
 import ntelebot
 
 
 def test_decode():
-    """Run through ntelebot.keyboardutil.decode."""
+    """Run through ntelebot.keyboardutil.combine."""
 
-    assert ntelebot.keyboardutil.decode({}, 'unencoded text') == 'unencoded text'
+    assert ntelebot.keyboardutil.combine([], 'unencoded text') == 'unencoded text'
 
-    assert base64.urlsafe_b64encode(b'first string\x00second string') == (
-        b'Zmlyc3Qgc3RyaW5nAHNlY29uZCBzdHJpbmc=')
-    message = {
-        'entities': [
-            {
-                'type': 'bogus',
-            },
-            {
-                'type': 'text_link',
-                'url': 'tg://btn/Zmlyc3Qgc3RyaW5nAHNlY29uZCBzdHJpbmc=',
-            },
-        ],
-    }
-
-    assert ntelebot.keyboardutil.decode(message, 'unencoded text') == 'unencoded text'
-    assert ntelebot.keyboardutil.decode(message, '\x000\x00suffix') == 'first stringsuffix'
-    assert ntelebot.keyboardutil.decode(message, '\x001\x00suffix') == 'second stringsuffix'
-    assert ntelebot.keyboardutil.decode(message, '\x002\x00suffix') == '\x002\x00suffix'
-    assert ntelebot.keyboardutil.decode(message, '\x00bogus\x00suffix') == '\x00bogus\x00suffix'
+    prefixes = ['first string', 'second string']
+    assert ntelebot.keyboardutil.combine(prefixes, 'unencoded text') == 'unencoded text'
+    assert ntelebot.keyboardutil.combine(prefixes, '\x000\x00suffix') == 'first stringsuffix'
+    assert ntelebot.keyboardutil.combine(prefixes, '\x001\x00suffix') == 'second stringsuffix'
+    assert ntelebot.keyboardutil.combine(prefixes, '\x002\x00suffix') == '\x002\x00suffix'
+    assert ntelebot.keyboardutil.combine(prefixes, '\x00bogus\x00suffix') == '\x00bogus\x00suffix'
 
 
 def test_shorten_lines():
@@ -64,9 +49,7 @@ def test_fix():
         [{'callback_data': 'long link'}],
         [{'callback_data': 'longer line'}],
     ]  # yapf: disable
-    assert base64.urlsafe_b64encode(b'longer li\x00long li') == b'bG9uZ2VyIGxpAGxvbmcgbGk='
-    assert ntelebot.keyboardutil.fix(keyboard,
-                                     5) == '<a href="tg://btn/bG9uZ2VyIGxpAGxvbmcgbGk=">\u200b</a>'
+    assert ntelebot.keyboardutil.fix(keyboard, 5) == ['longer li', 'long li']
     assert keyboard == [
         [{'callback_data': 'short'}],
         [{'callback_data': '\x001\x00ne'}],

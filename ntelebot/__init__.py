@@ -6,6 +6,7 @@ from ntelebot import delayqueue
 from ntelebot import deeplink
 from ntelebot import dispatch
 from ntelebot import errors
+from ntelebot import invislink
 from ntelebot import keyboardutil
 from ntelebot import limits
 from ntelebot import loop

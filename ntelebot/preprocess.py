@@ -80,7 +80,13 @@ class Preprocessor:  # pylint: disable=too-few-public-methods
             ctx.chat = payload['message']['chat']
             ctx.edit_id = payload['message']['message_id']
             ctx.callback_id = payload['id']
-            text = ntelebot.keyboardutil.decode(payload['message'], payload['data'])
+            text = payload['data']
+            if (entities := payload['message'].get('entities')):
+                prefixes, meta = ntelebot.invislink.decode(entities)
+                if prefixes:
+                    text = ntelebot.keyboardutil.combine(prefixes, text)
+                if meta:
+                    ctx.meta = meta
             ctx.command, ctx.text = get_command(text, bot.username)
             ctx.prefix = ctx.text.partition(' ')[0]
             return ctx
@@ -116,6 +122,7 @@ class Context:
     def __init__(self, conversations, bot):
         self._conversations = conversations
         self.bot = bot
+        self.meta = {}
 
     def forward(self, chat_id, **kwargs):
         """Forward the incoming message to the target chat."""
@@ -151,11 +158,11 @@ class Context:
         if args:
             text %= args
 
-        if (kwargs.get('parse_mode') == 'HTML' and kwargs.get('reply_markup') and
-                kwargs['reply_markup'].get('inline_keyboard')):
-            text_prefix = ntelebot.keyboardutil.fix(kwargs['reply_markup']['inline_keyboard'])
-            if text_prefix:
-                text = text_prefix + text
+        if kwargs.get('parse_mode') == 'HTML':
+            prefixes = None
+            if kwargs.get('reply_markup') and kwargs['reply_markup'].get('inline_keyboard'):
+                prefixes = ntelebot.keyboardutil.fix(kwargs['reply_markup']['inline_keyboard'])
+            text = f'{ntelebot.invislink.encode(prefixes, self.meta)}{text}'
 
         if self.reply_id:
             if text.startswith('document:'):
