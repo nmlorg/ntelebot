@@ -51,6 +51,8 @@ class Loop:
                 logging.debug(
                     'Asked Telegram to return after %r seconds, then waited %r with no reply!',
                     timeout, bot.timeout)
+            except (ntelebot.requests.ConnectionError, ntelebot.requests.ReadTimeout) as e:
+                logging.info('Transport error while polling: %r', e)
             except Exception:  # pylint: disable=broad-except
                 logging.exception('Ignoring uncaught error while polling:')
             else:
