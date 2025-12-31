@@ -48,6 +48,7 @@ def test_request(bot_token):
         'can_read_all_group_messages': False,
         'first_name': 'ntelebot',
         'has_main_web_app': False,
+        'has_topics_enabled': False,
         'id': int(bot_token.split(':', 1)[0]),
         'is_bot': True,
         'supports_inline_queries': False,
