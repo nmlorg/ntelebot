@@ -12,6 +12,10 @@ class Error(Exception):
             self.__dict__.update(data)
 
 
+class BadGateway(Error):
+    """HTTP 502 Bad Gateway."""
+
+
 class Conflict(Error):
     """HTTP 409 Conflict."""
 
@@ -30,6 +34,17 @@ class Timeout(Error):
 
 class TooLong(Error):
     """HTTP 400, Telegram MESSAGE_TOO_LONG."""
+
+
+class TooManyRequests(Error):
+    """HTTP 429 Too Many Requests."""
+
+    retry_after = None
+
+    def __init__(self, data=None):
+        super().__init__(data)
+        if data and (params := data.get('parameters')):
+            self.retry_after = params.get('retry_after')
 
 
 class Unauthorized(Error):

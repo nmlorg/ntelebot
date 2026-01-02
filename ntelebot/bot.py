@@ -56,22 +56,30 @@ class _Request:  # pylint: disable=too-few-public-methods
             data = ntelebot.requests.post(self.url, timeout=self.timeout, **_prepare(params)).json()
         except ntelebot.requests.ReadTimeout as exc:
             raise ntelebot.errors.Timeout(exc)
+
         if data['ok']:
             return data['result']
-        if data['error_code'] == 401:
-            raise ntelebot.errors.Unauthorized(data)
-        if data['error_code'] == 403:
-            raise ntelebot.errors.Forbidden(data)
-        if data['error_code'] == 404:
-            raise ntelebot.errors.NotFound(data)
-        if data['error_code'] == 409:
-            raise ntelebot.errors.Conflict(data)
-        if data['error_code'] == 400 and data['description'].startswith('Bad Request: '):
-            desc = data['description'][len('Bad Request: '):].split(':', 1)[0].lower()
-            if desc == 'message is not modified':
-                raise ntelebot.errors.Unmodified(data)
-            if desc in {'message is too long', 'message caption is too long'}:
-                raise ntelebot.errors.TooLong(data)
+
+        match data['error_code']:
+            case 400:
+                if data['description'].startswith('Bad Request: '):
+                    desc = data['description'][len('Bad Request: '):].split(':', 1)[0].lower()
+                    if desc == 'message is not modified':
+                        raise ntelebot.errors.Unmodified(data)
+                    if desc in {'message is too long', 'message caption is too long'}:
+                        raise ntelebot.errors.TooLong(data)
+            case 401:
+                raise ntelebot.errors.Unauthorized(data)
+            case 403:
+                raise ntelebot.errors.Forbidden(data)
+            case 404:
+                raise ntelebot.errors.NotFound(data)
+            case 409:
+                raise ntelebot.errors.Conflict(data)
+            case 429:
+                raise ntelebot.errors.TooManyRequests(data)
+            case 502:
+                raise ntelebot.errors.BadGateway(data)
 
         raise ntelebot.errors.Error(data)
 

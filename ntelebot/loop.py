@@ -32,7 +32,7 @@ class Loop:
 
         self.active.remove(token)
 
-    def _poll_bot(self, bot, dispatcher):
+    def _poll_bot(self, bot, dispatcher):  # pylint: disable=too-many-branches
         backoff = 0
         offset = None
         while not self.stopped and bot.token in self.active:
@@ -53,6 +53,12 @@ class Loop:
                     timeout, bot.timeout)
             except (ntelebot.requests.ConnectionError, ntelebot.requests.ReadTimeout) as e:
                 logging.info('Transport error while polling: %r', e)
+            except ntelebot.errors.BadGateway as e:
+                logging.info('Server error while polling: %r', e)
+            except ntelebot.errors.TooManyRequests as e:
+                logging.info('Rate limited while polling: %r', e)
+                if e.retry_after:
+                    backoff = max(backoff, e.retry_after)
             except Exception:  # pylint: disable=broad-except
                 logging.exception('Ignoring uncaught error while polling:')
             else:
