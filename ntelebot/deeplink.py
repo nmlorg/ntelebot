@@ -1,11 +1,7 @@
 """Utilities related to https://core.telegram.org/bots#deep-linking."""
 
 import base64
-
-
-def cgi_escape(text):  # pylint: disable=missing-docstring
-    return text.replace('&', '&amp;').replace('<', '&lt;').replace('>',
-                                                                   '&gt;').replace('"', '&quot;')
+import html
 
 
 def decode(text):
@@ -40,7 +36,7 @@ def encode(text):
 def encode_link(username, command, text=None):
     """Generate an HTML fragment that links to a deeplink back to the bot."""
 
-    return f'<a href="{cgi_escape(encode_url(username, command))}">{text or command}</a>'
+    return f'<a href="{html.escape(encode_url(username, command))}">{text or command}</a>'
 
 
 def encode_url(username, command):
