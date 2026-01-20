@@ -18,6 +18,7 @@ class MockBot(ntelebot.bot.Bot):
                 raise ntelebot.errors.Forbidden()
             self._log.append(
                 f"{method}({', '.join(f'{k}={repr(v)}' for k, v in sorted(kwargs.items()))})")
+            return {'message_id': kwargs.get('message_id', 9999)}
 
         setattr(self, method, func)
         return func
@@ -135,13 +136,15 @@ def test_message_group():
     # Messages sent to group chats that do not trigger a forced-private response are replied back to
     # the group chat as a reply.
     ctx.reply_text(response_text)
-    assert bot.log == "send_message(chat_id=2000, reply_to_message_id=3000, text='response • message')"
+    assert bot.log == "send_message(chat_id=2000, reply_parameters={'message_id': 3000, 'chat_id': 2000, 'allow_sending_without_reply': True}, text='response • message')"
 
     # However, messages sent to group chats whose responses are marked as private are sent back to
     # the user.
     ctx.private = True
     ctx.reply_text(response_text)
-    assert bot.log == "send_message(chat_id=1000, text='response • message')"
+    assert bot.log == """\
+send_message(chat_id=1000, reply_parameters={'message_id': 3000, 'chat_id': 2000, 'allow_sending_without_reply': True}, text='response • message')
+send_message(chat_id=2000, reply_parameters={'message_id': 3000, 'chat_id': 2000, 'allow_sending_without_reply': True}, text='(I replied in private.)')"""
 
     # However however, if a user sends a message to a group chat, and that user does not have a
     # private chat open with the bot, but the response is marked as private, the bot will try to
@@ -149,7 +152,8 @@ def test_message_group():
     # group chat.
     bot.unauthorized.add(user['id'])
     ctx.reply_text(response_text)
-    assert bot.log == "send_message(chat_id=2000, disable_web_page_preview=True, parse_mode='HTML', reply_to_message_id=3000, text='<a href=\"https://t.me/user&quot;name?start=L3Rlc3Qg4oCiIG1lc3NhZ2U\">Let\\'s take this to a private chat!</a>')"
+    assert bot.log == """\
+send_message(chat_id=2000, reply_markup={'inline_keyboard': [[{'text': "Resend '/test • message' in private", 'url': 'https://t.me/user"name?start=L3Rlc3Qg4oCiIG1lc3NhZ2U'}]]}, reply_parameters={'message_id': 3000, 'chat_id': 2000, 'allow_sending_without_reply': True}, text="That's too noisy to answer here. I tried to reply in private, but I can only send you a message if you already have a private chat open with me… and it looks like you don't 😞\\n\\nClick my name/picture, then the 💬 icon, then retype your command there; or click the button below and your Telegram app will do all that automatically.\\n\\n(I'll delete this in a minute.)")"""
 
 
 def test_channel_post():

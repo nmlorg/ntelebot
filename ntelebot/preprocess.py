@@ -1,6 +1,17 @@
 """Non-universal, but fairly versatile update preprocessor."""
 
+import threading
+
 import ntelebot
+
+PRIVATE_RESPONSE_TEXT = """\
+That's too noisy to answer here. I tried to reply in private, but I can only send you a message \
+if you already have a private chat open with me\u2026 and it looks like you don't \U0001f61e
+
+Click my name/picture, then the \U0001f4ac icon, then retype your command there; or click the \
+button below and your Telegram app will do all that automatically.
+
+(I'll delete this in a minute.)"""
 
 
 class Preprocessor:  # pylint: disable=too-few-public-methods
@@ -180,21 +191,45 @@ class Context:
 
             if self.user and self.chat['type'] == 'private':
                 return method(chat_id=self.user['id'], **kwargs)
+
+            reply_parameters = {
+                'message_id': self.reply_id,
+                'chat_id': self.chat['id'],
+                'allow_sending_without_reply': True,
+            }
+
             if not self.private or not self.user:
-                kwargs.setdefault('reply_to_message_id', self.reply_id)
-                return method(chat_id=self.chat['id'], **kwargs)
+                return method(chat_id=self.chat['id'], reply_parameters=reply_parameters, **kwargs)
+
             try:
-                return method(chat_id=self.user['id'], **kwargs)
+                message = method(chat_id=self.user['id'],
+                                 reply_parameters=reply_parameters,
+                                 **kwargs)
+                self.bot.send_message(chat_id=self.chat['id'],
+                                      text='(I replied in private.)',
+                                      reply_parameters=reply_parameters)
+                return message
             except ntelebot.errors.Forbidden:
                 orig_text = self.text
                 if self.command:
                     orig_text = f'/{self.command} {orig_text}'
-                return self.bot.send_message(chat_id=self.chat['id'],
-                                             text=self.bot.encode_link(
-                                                 orig_text, "Let's take this to a private chat!"),
-                                             reply_to_message_id=self.reply_id,
-                                             disable_web_page_preview=True,
-                                             parse_mode='HTML')
+                keyboard = [[{
+                    'text': f'Resend {repr(orig_text)} in private',
+                    'url': self.bot.encode_url(orig_text),
+                }]]
+                message = self.bot.send_message(chat_id=self.chat['id'],
+                                                text=PRIVATE_RESPONSE_TEXT,
+                                                reply_parameters=reply_parameters,
+                                                reply_markup={'inline_keyboard': keyboard})
+                thr = threading.Timer(60,
+                                      self.bot.delete_message,
+                                      kwargs={
+                                          'chat_id': self.chat['id'],
+                                          'message_id': message['message_id']
+                                      })
+                thr.daemon = True
+                thr.start()
+                return message
 
         if self.edit_id:
             return self.bot.edit_message_text(chat_id=self.chat['id'],
