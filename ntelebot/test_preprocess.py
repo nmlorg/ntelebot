@@ -8,54 +8,29 @@ class MockBot(ntelebot.bot.Bot):
 
     def __init__(self):
         super().__init__('1234:TOKEN')
-        self.messages = {}
-        self.parse_modes = {}
-        self.queries = {}
         self.unauthorized = set()
+        self._log = []
 
-    @staticmethod
-    def __getattr__(k):  # pragma: no cover
-        raise AttributeError(k)
+    def __getattr__(self, method):
 
-    def answer_inline_query(self, inline_query_id=None, results=None):
-        self.queries[inline_query_id] = results
-        return 'ANSWER'
+        def func(**kwargs):
+            if 'chat_id' in kwargs and kwargs['chat_id'] in self.unauthorized:
+                raise ntelebot.errors.Forbidden()
+            self._log.append(
+                f"{method}({', '.join(f'{k}={repr(v)}' for k, v in sorted(kwargs.items()))})")
 
-    def edit_message_text(self, chat_id=None, message_id=None, text=None, parse_mode=None):
-        self.messages[chat_id, message_id] = text
-        self.parse_modes[chat_id, message_id] = parse_mode
-        return 'EDIT'
+        setattr(self, method, func)
+        return func
 
     @staticmethod
     def get_me():
         return {'username': 'user"name'}
 
-    def send_message(  # pylint: disable=unused-argument,too-many-arguments
-            self,
-            *,
-            chat_id=None,
-            text=None,
-            reply_to_message_id=None,
-            disable_web_page_preview=None,
-            parse_mode=None):
-        if chat_id in self.unauthorized:
-            raise ntelebot.errors.Forbidden()
-
-        self.messages[chat_id, None] = text
-        self.parse_modes[chat_id, None] = parse_mode
-        return reply_to_message_id and 'REPLY' or 'SEND'
-
-    @staticmethod
-    def send_document(chat_id=None, document=None, caption=None):  # pylint: disable=unused-argument
-        return f'DOCUMENT={document} CAPTION={caption}'
-
-    @staticmethod
-    def send_photo(chat_id=None, photo=None, caption=None):  # pylint: disable=unused-argument
-        return f'PHOTO={photo} CAPTION={caption}'
-
-    @staticmethod
-    def send_sticker(chat_id=None, sticker=None):  # pylint: disable=unused-argument
-        return f'STICKER={sticker}'
+    @property
+    def log(self):
+        log = self._log
+        self._log = []
+        return '\n'.join(log)
 
 
 def test_unknown_update():
@@ -84,8 +59,8 @@ def test_callback_query():
     assert ctx.text is text
 
     response_text = 'response \u2022 message'
-    assert ctx.reply_text(response_text) == 'EDIT'
-    assert bot.messages[chat['id'], message['message_id']] is response_text
+    ctx.reply_text(response_text)
+    assert bot.log == "edit_message_text(chat_id=2000, message_id=3000, text='response • message')"
 
 
 def test_inline_query():
@@ -104,8 +79,8 @@ def test_inline_query():
     assert ctx.text is text
 
     response_list = ['response \u2022 message']
-    assert ctx.reply_inline(response_list) == 'ANSWER'
-    assert bot.queries[inline_query['id']] is response_list
+    ctx.reply_inline(response_list)
+    assert bot.log == "answer_inline_query(inline_query_id=2000, results=['response • message'])"
 
 
 def test_message_private():
@@ -127,14 +102,13 @@ def test_message_private():
     response_text = 'response \u2022 message'
 
     # Messages sent in private chats are always replied back to the private chat as a new message.
-    assert ctx.reply_text(response_text) == 'SEND'
-    assert bot.messages[user['id'], None] is response_text
+    ctx.reply_text(response_text)
+    assert bot.log == "send_message(chat_id=1000, text='response • message')"
 
     # ... even when the command is marked as private.
-    bot.messages.clear()
     ctx.private = True
-    assert ctx.reply_text(response_text) == 'SEND'
-    assert bot.messages[user['id'], None] is response_text
+    ctx.reply_text(response_text)
+    assert bot.log == "send_message(chat_id=1000, text='response • message')"
 
 
 def test_message_group():
@@ -156,30 +130,26 @@ def test_message_group():
 
     response_text = 'response \u2022 message'
 
+    # pylint: disable=line-too-long
+
     # Messages sent to group chats that do not trigger a forced-private response are replied back to
     # the group chat as a reply.
-    assert ctx.reply_text(response_text) == 'REPLY'
-    assert bot.messages[chat['id'], None] is response_text
-    bot.messages.clear()
+    ctx.reply_text(response_text)
+    assert bot.log == "send_message(chat_id=2000, reply_to_message_id=3000, text='response • message')"
 
     # However, messages sent to group chats whose responses are marked as private are sent back to
     # the user.
     ctx.private = True
-    assert ctx.reply_text(response_text) == 'SEND'
-    assert bot.messages[user['id'], None] is response_text
-    bot.messages.clear()
+    ctx.reply_text(response_text)
+    assert bot.log == "send_message(chat_id=1000, text='response • message')"
 
     # However however, if a user sends a message to a group chat, and that user does not have a
     # private chat open with the bot, but the response is marked as private, the bot will try to
     # send the response in private but will fail, and end up sending a generic reply back to the
     # group chat.
     bot.unauthorized.add(user['id'])
-    assert ctx.reply_text(response_text) == 'REPLY'
-    assert bot.messages[chat['id'], None] == (
-        '<a href="https://t.me/user&quot;name?start=L3Rlc3Qg4oCiIG1lc3NhZ2U">Let\'s take this to a '
-        'private chat!</a>')
-    assert bot.parse_modes[chat['id'], None] == 'HTML'
-    bot.messages.clear()
+    ctx.reply_text(response_text)
+    assert bot.log == "send_message(chat_id=2000, disable_web_page_preview=True, parse_mode='HTML', reply_to_message_id=3000, text='<a href=\"https://t.me/user&quot;name?start=L3Rlc3Qg4oCiIG1lc3NhZ2U\">Let\\'s take this to a private chat!</a>')"
 
 
 def test_channel_post():
@@ -213,16 +183,13 @@ def test_message_reply_variations():
     ctx = preprocessor(bot, {'message': message})
     response_text = 'format \u2022 %s'
     ctx.reply_text(response_text, 'arg \u2022')
-    assert bot.messages[user['id'], None] == 'format \u2022 arg \u2022'
-    assert bot.parse_modes[user['id'], None] is None
+    assert bot.log == "send_message(chat_id=1000, text='format • arg •')"
 
-    bot.parse_modes.clear()
     ctx.reply_html(response_text)
-    assert bot.parse_modes[user['id'], None] == 'HTML'
+    assert bot.log == "send_message(chat_id=1000, parse_mode='HTML', text='format • %s')"
 
-    bot.parse_modes.clear()
     ctx.reply_markdown(response_text)
-    assert bot.parse_modes[user['id'], None] == 'Markdown'
+    assert bot.log == "send_message(chat_id=1000, parse_mode='Markdown', text='format • %s')"
 
 
 def test_message_slash_start():
@@ -505,12 +472,18 @@ def test_media():
     assert ctx.photo is None
     assert ctx.sticker == 'AAA1234'
 
-    assert ctx.reply_text('document:DOCUMENT_ID MY TEXT') == 'DOCUMENT=DOCUMENT_ID CAPTION=MY TEXT'
-    assert ctx.reply_text('document:DOCUMENT_ID') == 'DOCUMENT=DOCUMENT_ID CAPTION=None'
-    assert ctx.reply_text('photo:PHOTO_ID MY TEXT') == 'PHOTO=PHOTO_ID CAPTION=MY TEXT'
-    assert ctx.reply_text('photo:PHOTO_ID') == 'PHOTO=PHOTO_ID CAPTION=None'
-    assert ctx.reply_text('sticker:BOGUS DATA') == 'SEND'
-    assert ctx.reply_text('sticker:STICKER_ID') == 'STICKER=STICKER_ID'
+    ctx.reply_text('document:DOCUMENT_ID MY TEXT')
+    assert bot.log == "send_document(caption='MY TEXT', chat_id=1000, document='DOCUMENT_ID')"
+    ctx.reply_text('document:DOCUMENT_ID')
+    assert bot.log == "send_document(chat_id=1000, document='DOCUMENT_ID')"
+    ctx.reply_text('photo:PHOTO_ID MY TEXT')
+    assert bot.log == "send_photo(caption='MY TEXT', chat_id=1000, photo='PHOTO_ID')"
+    ctx.reply_text('photo:PHOTO_ID')
+    assert bot.log == "send_photo(chat_id=1000, photo='PHOTO_ID')"
+    ctx.reply_text('sticker:BOGUS DATA')
+    assert bot.log == "send_message(chat_id=1000, text='sticker:BOGUS DATA')"
+    ctx.reply_text('sticker:STICKER_ID')
+    assert bot.log == "send_sticker(chat_id=1000, sticker='STICKER_ID')"
 
 
 def test_new_chat_members():
