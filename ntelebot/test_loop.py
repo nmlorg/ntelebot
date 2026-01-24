@@ -28,6 +28,7 @@ def test_add():
 
         timeout = 3
         token = 'mock:bot'
+        username = 'mockbot'
 
         @staticmethod
         def get_updates(offset=None, timeout=None):
@@ -58,6 +59,7 @@ def test_remove():
 
         timeout = 3
         token = 'mock:bot'
+        username = 'mockbot'
 
         @staticmethod
         def get_updates(offset=None, timeout=None):

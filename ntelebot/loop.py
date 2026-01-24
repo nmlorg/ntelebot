@@ -23,9 +23,10 @@ class Loop:
 
         if bot.token not in self.active:
             self.active.add(bot.token)
-            thr = threading.Thread(target=self._poll_bot, args=(bot, dispatcher))
-            thr.daemon = True
-            thr.start()
+            threading.Thread(target=self._poll_bot,
+                             args=(bot, dispatcher),
+                             daemon=True,
+                             name=f'@{bot.username}').start()
 
     def remove(self, token):
         """Stop polling for updates for the given API Token."""
