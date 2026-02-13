@@ -43,6 +43,7 @@ def test_request(bot_token):
 
     bot.get_me.respond(real_http=True)
     assert bot.get_me() == {
+        'allows_users_to_create_topics': False,
         'can_connect_to_business': False,
         'can_join_groups': False,
         'can_read_all_group_messages': False,
