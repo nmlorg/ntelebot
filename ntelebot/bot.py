@@ -66,7 +66,10 @@ class _Request:  # pylint: disable=too-few-public-methods
                     desc = data['description'][len('Bad Request: '):].split(':', 1)[0].lower()
                     if desc == 'message is not modified':
                         raise ntelebot.errors.Unmodified(data)
-                    if desc in {'message is too long', 'message caption is too long'}:
+                    if desc in {
+                            'message is too long', 'message caption is too long',
+                            'rich_message_text_too_long'
+                    }:
                         raise ntelebot.errors.TooLong(data)
             case 401:
                 raise ntelebot.errors.Unauthorized(data)
