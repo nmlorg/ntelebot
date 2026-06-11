@@ -46,13 +46,16 @@ def test_request(bot_token):
         'allows_users_to_create_topics': False,
         'can_connect_to_business': False,
         'can_join_groups': False,
+        'can_manage_bots': False,
         'can_read_all_group_messages': False,
         'first_name': 'ntelebot',
         'has_main_web_app': False,
         'has_topics_enabled': False,
         'id': int(bot_token.split(':', 1)[0]),
         'is_bot': True,
+        'supports_guest_queries': False,
         'supports_inline_queries': False,
+        'supports_join_request_queries': False,
         'username': 'ntelebot',
     }
 
