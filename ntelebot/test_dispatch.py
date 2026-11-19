@@ -11,8 +11,7 @@ class MockBot(ntelebot.bot.Bot):
     def __init__(self):
         super().__init__('1234:test')
 
-    @staticmethod
-    def __getattr__(k):  # pragma: no cover
+    def __getattr__(self, k):  # pragma: no cover
         raise AttributeError(k)
 
     @staticmethod

@@ -65,7 +65,7 @@ class LoopDispatcher(Dispatcher):
         super().__init__()
         self.preprocessor = preprocessor or ntelebot.preprocess.Preprocessor()
 
-    def __call__(self, bot, update):
+    def __call__(self, bot, update):  # pylint: disable=arguments-differ
         """Preprocess a Telegram Update and dispatch it to a registered handler."""
 
         ctx = self.preprocessor(bot, update)
