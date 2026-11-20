@@ -35,7 +35,7 @@ disable = [
 [tool.pytest.ini_options]
 addopts = '-rN --cov=ntelebot --cov-report=html'
 consider_namespace_packages = true
-testpaths = ['ntelebot']
+testpaths = ['tests']
 verbosity_assertions = 2
 
 [tool.setuptools.packages.find]
@@ -55,9 +55,9 @@ pass_env = [
     'TEST_BOT_TOKEN',
 ]
 commands = [
-    ['yapf', '-i', '-r', 'examples', 'ntelebot'],
+    ['yapf', '-i', '-r', 'examples', 'ntelebot', 'tests'],
     ['python', '-B', '-m', 'pytest'],
-    ['pylint', 'examples', 'ntelebot'],
+    ['pylint', 'examples', 'ntelebot', 'tests'],
 ]
 
 [tool.yapf]
